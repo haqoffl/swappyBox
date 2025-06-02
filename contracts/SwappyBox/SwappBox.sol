@@ -138,6 +138,7 @@ contract SwappyBox{
         uint demand = boxData[_contract].totalBid;
         return SLOPE * demand + boxData[_contract].basePrice;
     }
+    
 
     
 
