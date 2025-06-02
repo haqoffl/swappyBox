@@ -188,11 +188,11 @@
 	},
 	"sources": {
 		"contracts/SwappyBox/SwappBox.sol": {
-			"keccak256": "0xb0d3be5cc6f1895238c628238b95c77aa5dee66dba410ff325d2a040733e122e",
+			"keccak256": "0x8bd935934af5f72771e94110bb956dad22f0c9174ba1c50b79feb0f512ff9198",
 			"license": "GPL-3.0",
 			"urls": [
-				"bzz-raw://23a920af4d08ec52bcd7024b6c8c3ae20fc9db02af168f421d360465d1582a54",
-				"dweb:/ipfs/QmU4QpbdkqCzQV3McXtTDQyMzegk48xsotnWA5pPcjKUp1"
+				"bzz-raw://092226b0791da4c808f3a89d3290bbb11ec3e49c2288060246aa80a3de3a9d39",
+				"dweb:/ipfs/QmeA9WvQLwSNDhStSrzKRgkT7oxESDNTTFXQbFVXz9Uebk"
 			]
 		}
 	},
