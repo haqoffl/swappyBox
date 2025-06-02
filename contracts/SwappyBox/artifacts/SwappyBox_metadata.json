@@ -138,7 +138,7 @@
 				"inputs": [
 					{
 						"internalType": "address",
-						"name": "_contract",
+						"name": "_contractAdd",
 						"type": "address"
 					}
 				],
@@ -293,11 +293,11 @@
 	},
 	"sources": {
 		"contracts/SwappyBox/SwappBox.sol": {
-			"keccak256": "0x8bd935934af5f72771e94110bb956dad22f0c9174ba1c50b79feb0f512ff9198",
+			"keccak256": "0xd1bdea802c1b4260d47d24f214a1cac4e0310c32c4dae50a49ddf8bf9bd04aa1",
 			"license": "GPL-3.0",
 			"urls": [
-				"bzz-raw://092226b0791da4c808f3a89d3290bbb11ec3e49c2288060246aa80a3de3a9d39",
-				"dweb:/ipfs/QmeA9WvQLwSNDhStSrzKRgkT7oxESDNTTFXQbFVXz9Uebk"
+				"bzz-raw://ee0565abc60de97d7c3dc595ee4570a2e6a70ffcf9a80abe288aad72d497cb18",
+				"dweb:/ipfs/QmYdZV76jMhBaeirtbP9eQyVk64wvs6PMfR4NoizV7W1rs"
 			]
 		}
 	},

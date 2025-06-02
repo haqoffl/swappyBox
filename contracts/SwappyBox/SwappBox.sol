@@ -138,17 +138,14 @@ contract SwappyBox{
         uint demand = boxData[_contract].totalBid;
         return SLOPE * demand + boxData[_contract].basePrice;
     }
-    
-
-    
 
     function getBoxData(address _contract) public view returns(BidTrack memory){
         return boxData[_contract];
     }
 
 
-    function getBalance(address _contract) public view returns(uint){
-        return address(_contract).balance;
+    function getBalance(address _contractAdd) public view returns(uint){
+        return address(_contractAdd).balance;
     }
 
 }
