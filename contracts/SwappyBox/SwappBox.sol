@@ -41,21 +41,19 @@ contract SwappyBox{
         boxData[boxAddress] = BidTrack(block.timestamp,block.timestamp+3600,0,basePrice,basePrice,msg.sender,msg.sender);
     }
 
-    function obligate(address _contract) public payable{
+    function obligate(address _contract) public {
         require(boxData[_contract].currentWinner == msg.sender,"you are not bid winner");
-        uint depositedAmount = address(_contract).balance;
-        uint paidBidAmount = boxData[_contract].basePrice;
-        uint amountToTransfer = depositedAmount - paidBidAmount;
-        require(amountToTransfer == msg.value,"obligation reverted");
+        uint amountToTransfer = Box(payable(_contract)).getStrikePriceToPay();
         IERC20(tokenForObligation).transferFrom(msg.sender,boxData[_contract].poolInitiator,amountToTransfer);
         Box(payable(_contract)).withdraw(msg.sender,true);
     }
 
-    function bid(address _contract,uint bidAmount) public payable{
+    function bid(address _contract) public payable{
         require(boxData[_contract].currentWinner != msg.sender,"you already own");
         uint bestPrice = getPrice(_contract);
+        uint bidAmount = msg.value;
         if(bestPrice <= bidAmount && boxData[_contract].lastPrice < bidAmount){
-            require(msg.value == bidAmount);
+            
             uint initiatorFees = (bidAmount * 1)/100;
             uint refund = bidAmount - initiatorFees;
             (bool success,)=payable(boxData[_contract].currentWinner).call{value:refund}(""); 
@@ -70,8 +68,8 @@ contract SwappyBox{
 
         }
 
-        require(boxData[_contract].bidEndTime < block.timestamp);
-        boxData[_contract].totalBid = 0;
+        // require(boxData[_contract].bidEndTime < block.timestamp);
+        // boxData[_contract].totalBid = 0;
     }
     
     function withdraw(address _contract) public{
@@ -104,4 +102,3 @@ contract SwappyBox{
 3.obliigation, stable coin only allow!. - done have to check
 4. events emitting!.
 */
-

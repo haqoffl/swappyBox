@@ -9,13 +9,19 @@
 				"inputs": [
 					{
 						"internalType": "address",
+						"name": "_token",
+						"type": "address"
+					}
+				],
+				"stateMutability": "nonpayable",
+				"type": "constructor"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "address",
 						"name": "_contract",
 						"type": "address"
-					},
-					{
-						"internalType": "uint256",
-						"name": "bidAmount",
-						"type": "uint256"
 					}
 				],
 				"name": "bid",
@@ -126,6 +132,11 @@
 					{
 						"internalType": "uint256",
 						"name": "_deadline",
+						"type": "uint256"
+					},
+					{
+						"internalType": "uint256",
+						"name": "_strikeInUSDC",
 						"type": "uint256"
 					}
 				],
@@ -238,7 +249,20 @@
 				],
 				"name": "obligate",
 				"outputs": [],
-				"stateMutability": "payable",
+				"stateMutability": "nonpayable",
+				"type": "function"
+			},
+			{
+				"inputs": [],
+				"name": "tokenForObligation",
+				"outputs": [
+					{
+						"internalType": "address",
+						"name": "",
+						"type": "address"
+					}
+				],
+				"stateMutability": "view",
 				"type": "function"
 			},
 			{
@@ -292,12 +316,28 @@
 		"remappings": []
 	},
 	"sources": {
-		"contracts/SwappyBox/SwappBox.sol": {
-			"keccak256": "0xd1bdea802c1b4260d47d24f214a1cac4e0310c32c4dae50a49ddf8bf9bd04aa1",
+		"contracts/SwappyBox/Box.sol": {
+			"keccak256": "0xd78127ce3f5d613859dcc611c5ca0e28291cc3e5a879986cc70e6e622470ed0f",
 			"license": "GPL-3.0",
 			"urls": [
-				"bzz-raw://ee0565abc60de97d7c3dc595ee4570a2e6a70ffcf9a80abe288aad72d497cb18",
-				"dweb:/ipfs/QmYdZV76jMhBaeirtbP9eQyVk64wvs6PMfR4NoizV7W1rs"
+				"bzz-raw://32b8edcf7382425d6fd920d4a42db7ae6cce10f12b19c301f837a55f78921f17",
+				"dweb:/ipfs/QmSdczHh6dfvdg7UKHWAHzXeUfpMn5gTpRWK2wdQaLTZ5D"
+			]
+		},
+		"contracts/SwappyBox/IERC20.sol": {
+			"keccak256": "0x8606c8152bfc1f1ebdd0f523fa550bc141859062f6b606567a977dc8795f7f0b",
+			"license": "MIT",
+			"urls": [
+				"bzz-raw://c5e3d92164762af40561b42e941ce6314dc52905d817094e97ace39e6d132419",
+				"dweb:/ipfs/Qmf6cMd442mc7z2ppNCwgwrh5LMZohWxasHRd3ZFdsbKQF"
+			]
+		},
+		"contracts/SwappyBox/SwappBox.sol": {
+			"keccak256": "0xac599f36981cb179da2c6e5460523b724dbedc9636c712274cee92e54b776b08",
+			"license": "GPL-3.0",
+			"urls": [
+				"bzz-raw://8d2f21e1afb45ebb219384ba663dd314fb0310e953ec254cb8eceaede7a673da",
+				"dweb:/ipfs/QmSTioYLhh3o35bAUo8NqDNtTMv4bCayGRwBXD6bv6B5NB"
 			]
 		}
 	},

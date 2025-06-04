@@ -52,8 +52,14 @@ contract Box {
 
         }
 
+    
+
 
     }
+
+        function getStrikePriceToPay() public view returns(uint){
+            return strikePrice;
+        }
 
     // Fallback to receive ETH
     receive() external payable {}
