@@ -68,6 +68,11 @@
 						"internalType": "uint256",
 						"name": "_durationInSeconds",
 						"type": "uint256"
+					},
+					{
+						"internalType": "uint256",
+						"name": "_strikeInUSDC",
+						"type": "uint256"
 					}
 				],
 				"name": "deposit",
@@ -128,6 +133,19 @@
 				"type": "function"
 			},
 			{
+				"inputs": [],
+				"name": "strikePrice",
+				"outputs": [
+					{
+						"internalType": "uint256",
+						"name": "",
+						"type": "uint256"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
 				"inputs": [
 					{
 						"internalType": "address",
@@ -163,7 +181,7 @@
 	},
 	"settings": {
 		"compilationTarget": {
-			"contracts/SwappyBox/SwappBox.sol": "Box"
+			"contracts/SwappyBox/Box.sol": "Box"
 		},
 		"evmVersion": "cancun",
 		"libraries": {},
@@ -187,12 +205,12 @@
 		"remappings": []
 	},
 	"sources": {
-		"contracts/SwappyBox/SwappBox.sol": {
-			"keccak256": "0x8bd935934af5f72771e94110bb956dad22f0c9174ba1c50b79feb0f512ff9198",
+		"contracts/SwappyBox/Box.sol": {
+			"keccak256": "0x3487863cd00bc7665ade988bfa46bdc4610b51357552a3428732ead1af00fabf",
 			"license": "GPL-3.0",
 			"urls": [
-				"bzz-raw://092226b0791da4c808f3a89d3290bbb11ec3e49c2288060246aa80a3de3a9d39",
-				"dweb:/ipfs/QmeA9WvQLwSNDhStSrzKRgkT7oxESDNTTFXQbFVXz9Uebk"
+				"bzz-raw://090e3d02ba4ca8523d6d0d9956995270316d1b6b6b15c0ea02356a2044ade61b",
+				"dweb:/ipfs/QmS8mwvnzYM9HkvD5j9u7J861armAX3tQGtxd2XM3EJZ42"
 			]
 		}
 	},
