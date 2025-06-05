@@ -1,77 +1,83 @@
-"use client"
+'use client';
 
-import type React from "react"
+import type React from 'react';
 
-import { useState, useEffect } from "react"
-import { motion, AnimatePresence } from "framer-motion"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Wallet, TrendingUp, Users, DollarSign, Sparkles, Zap, AlertCircle, Calendar, Clock } from "lucide-react"
-import Link from "next/link"
-import { useWallet } from "@/components/wallet-provider"
-import Header from "@/components/header"
+import { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
+import {
+  Wallet,
+  TrendingUp,
+  Users,
+  DollarSign,
+  Sparkles,
+  Zap,
+  AlertCircle,
+  Calendar,
+  Clock,
+} from 'lucide-react';
+import Link from 'next/link';
+import Header from '@/components/header';
+import { usePrivy } from '@privy-io/react-auth';
+import { useSimpleContract } from '../../lib/contract-service'; // adjust path as needed
 
 interface BoxFormData {
-  tokenType: string
-  tokenAmount: string
-  tokenAddress: string
-  estimatedUSD: string
-  deadline: string
-  walletAddress: string
+  tokenType: string;
+  tokenAmount: string;
+  tokenAddress: string;
+  estimatedUSD: string;
+  deadline: string;
+  walletAddress: string;
 }
-
-const mockCreatedBoxStats = {
-  transactionCut: "0.25 ETH",
-  numberOfTrades: 23,
-  uniqueTraders: 15,
-  totalVolume: "45.8 ETH",
-}
-
-const mockTraderActivity = [
-  {
-    id: 1,
-    trader: "0x742d35Cc6634C0532925a3b8D4C2C4e4C4C4C4C4",
-    bidAmount: "2.40 ETH",
-    timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000),
-    marginProfit: "0.12 ETH",
-  },
-  {
-    id: 2,
-    trader: "0x891d35Cc6634C0532925a3b8D4C2C4e4C4C4C4C4",
-    bidAmount: "2.35 ETH",
-    timestamp: new Date(Date.now() - 4 * 60 * 60 * 1000),
-    marginProfit: "0.08 ETH",
-  },
-  {
-    id: 3,
-    trader: "0x456d35Cc6634C0532925a3b8D4C2C4e4C4C4C4C4",
-    bidAmount: "2.32 ETH",
-    timestamp: new Date(Date.now() - 6 * 60 * 60 * 1000),
-    marginProfit: "0.05 ETH",
-  },
-]
 
 function shortenAddress(address: string) {
-  return `${address.slice(0, 6)}...${address.slice(-4)}`
+  return `${address.slice(0, 6)}...${address.slice(-4)}`;
 }
 
 export default function CreateBoxPage() {
-  const { isConnected, address } = useWallet()
-  const [isSubmitting, setIsSubmitting] = useState(false)
-  const [showConfirmation, setShowConfirmation] = useState(false)
-  const [currentStep, setCurrentStep] = useState(1)
+  const privy = usePrivy();
+  const {
+    connectWallet,
+    account,
+    createBox,
+    depositToBox,
+    isSubmitting: contractSubmitting,
+    showSuccess: contractSuccess,
+  } = useSimpleContract();
+
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showConfirmation, setShowConfirmation] = useState(false);
+  const [currentStep, setCurrentStep] = useState(1);
+  const [createdBoxIndex, setCreatedBoxIndex] = useState<number | null>(null);
   const [formData, setFormData] = useState<BoxFormData>({
-    tokenType: "",
-    tokenAmount: "",
-    tokenAddress: "",
-    estimatedUSD: "",
-    deadline: "",
-    walletAddress: "",
-  })
+    tokenType: '',
+    tokenAmount: '',
+    tokenAddress: '',
+    estimatedUSD: '',
+    deadline: '',
+    walletAddress: '',
+  });
+
+  const address = privy.user?.wallet?.address;
+  const isAuthenticated = privy.user !== undefined;
 
   // Update wallet address when connected
   useEffect(() => {
@@ -79,108 +85,166 @@ export default function CreateBoxPage() {
       setFormData((prev) => ({
         ...prev,
         walletAddress: address,
-      }))
+      }));
     }
-  }, [address])
+  }, [address]);
+
+  // Connect wallet automatically when Privy is authenticated
+  useEffect(() => {
+    if (isAuthenticated && !account) {
+      connectWallet().catch(console.error);
+    }
+  }, [isAuthenticated, account, connectWallet]);
 
   // Set default deadline to 24 hours from now
   useEffect(() => {
-    const tomorrow = new Date()
-    tomorrow.setDate(tomorrow.getDate() + 1)
-    const defaultDeadline = tomorrow.toISOString().slice(0, 16) // Format for datetime-local
-
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    const defaultDeadline = tomorrow.toISOString().slice(0, 16);
     setFormData((prev) => ({
       ...prev,
       deadline: defaultDeadline,
-    }))
-  }, [])
+    }));
+  }, []);
+
+  // Handle contract success
+  useEffect(() => {
+    if (contractSuccess && !showConfirmation) {
+      setShowConfirmation(true);
+      setCurrentStep(3);
+    }
+  }, [contractSuccess, showConfirmation]);
 
   const handleInputChange = (field: keyof BoxFormData, value: string) => {
     setFormData((prev) => ({
       ...prev,
       [field]: value,
-    }))
+    }));
 
     // Auto-calculate USD value
-    if (field === "tokenAmount" || field === "tokenType") {
-      const amount = field === "tokenAmount" ? value : formData.tokenAmount
-      const token = field === "tokenType" ? value : formData.tokenType
-
+    if (field === 'tokenAmount' || field === 'tokenType') {
+      const amount = field === 'tokenAmount' ? value : formData.tokenAmount;
+      const token = field === 'tokenType' ? value : formData.tokenType;
       if (amount && token) {
         const prices: Record<string, number> = {
-          ETH: 3600,
-          BTC: 96000,
+          ETH: 2000,
           USDC: 1,
           USDT: 1,
-          LINK: 25,
-          UNI: 12,
-        }
-
-        const price = prices[token] || 0
-        const usdValue = (Number.parseFloat(amount) * price).toLocaleString()
+        };
+        const price = prices[token] || 0;
+        const usdValue = (Number.parseFloat(amount) * price).toLocaleString();
         setFormData((prev) => ({
           ...prev,
           estimatedUSD: usdValue,
-        }))
+        }));
       }
     }
-  }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
+    e.preventDefault();
 
-    if (!isConnected) {
-      alert("Please connect your wallet first!")
-      return
+    if (!isAuthenticated) {
+      alert('Please connect your wallet first!');
+      return;
+    }
+
+    if (!account) {
+      try {
+        await connectWallet();
+      } catch (error) {
+        console.error('Failed to connect wallet:', error);
+        alert('Failed to connect wallet. Please try again.');
+        return;
+      }
     }
 
     if (!formData.tokenType || !formData.tokenAmount || !formData.deadline) {
-      alert("Please fill in all required fields!")
-      return
+      alert('Please fill in all required fields!');
+      return;
     }
 
-    setIsSubmitting(true)
-    setCurrentStep(2)
+    setIsSubmitting(true);
+    setCurrentStep(2);
 
     try {
-      // Simulate box creation
-      await new Promise((resolve) => setTimeout(resolve, 3000))
+      // Step 1: Create the box
+      await createBox();
 
-      setCurrentStep(3)
-      setShowConfirmation(true)
+      // Step 2: Deposit to the box (you might need to get the box index from an event or state)
+      // For now, using a placeholder index - you'll need to get this from your contract events
+      const boxIndex = 0; // This should come from the createBox transaction receipt
+      const deadlineTimestamp = Math.floor(
+        new Date(formData.deadline).getTime() / 1000
+      );
+      const strikeInUSDC = Math.floor(
+        parseFloat(formData.estimatedUSD.replace(/,/g, '')) * 1e6
+      ); // Convert to USDC format (6 decimals)
+
+      await depositToBox(boxIndex, deadlineTimestamp, strikeInUSDC);
+
+      setCreatedBoxIndex(boxIndex);
+      console.log('address :', depositToBox.address);
+      // showConfirmation will be set by the useEffect watching contractSuccess
     } catch (error) {
-      console.error("Error creating box:", error)
-      alert("Error creating box. Please try again.")
-      setCurrentStep(1)
-    } finally {
-      setIsSubmitting(false)
+      console.error('Error creating box:', error);
+      alert('Error creating box. Please try again.');
+      setCurrentStep(1);
+      setIsSubmitting(false);
     }
-  }
+  };
 
   const handleWithdraw = async () => {
-    setIsSubmitting(true)
-    try {
-      await new Promise((resolve) => setTimeout(resolve, 2000))
-      alert("Withdrawal successful!")
-    } catch (error) {
-      console.error("Error withdrawing:", error)
-      alert("Error withdrawing. Please try again.")
-    } finally {
-      setIsSubmitting(false)
+    if (!account || createdBoxIndex === null) {
+      alert('No box available for withdrawal');
+      return;
     }
-  }
 
-  const isFormValid = formData.tokenType && formData.tokenAmount && formData.deadline && isConnected
+    setIsSubmitting(true);
+    try {
+      // You'll need to get the actual box address from your contract
+      // This is a placeholder - implement according to your contract structure
+      const boxAddress = `0x${createdBoxIndex.toString().padStart(40, '0')}`;
+      console.log(boxAddress);
+      // await withdraw(boxAddress);
+      alert('Withdrawal functionality will be available after implementation');
+    } catch (error) {
+      console.error('Error withdrawing:', error);
+      alert('Error withdrawing. Please try again.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const isFormValid =
+    formData.tokenType &&
+    formData.tokenAmount &&
+    formData.deadline &&
+    isAuthenticated &&
+    account;
+
+  // Mock data for display (replace with real data from your contract)
+  const mockCreatedBoxStats = {
+    transactionCut: '2.5%',
+    numberOfTrades: '12',
+    uniqueTraders: '8',
+    totalVolume: '$24,500',
+  };
+
+  const mockTraderActivity = [
+    {
+      id: 1,
+      trader: '0x1234...5678',
+      bidAmount: '1.5 ETH',
+      marginProfit: '$50.25',
+      timestamp: new Date(),
+    },
+    // Add more mock data as needed
+  ];
 
   if (showConfirmation) {
     return (
       <div className="min-h-screen bg-black">
-        <Header
-          title="Box Created Successfully!"
-          subtitle="Your SwapBox is now live and ready for trading"
-          showCreateButton={false}
-        />
-
         <main className="container mx-auto px-4 py-8">
           <div className="max-w-4xl mx-auto space-y-6">
             {/* Success Animation */}
@@ -188,19 +252,24 @@ export default function CreateBoxPage() {
               className="text-center py-8"
               initial={{ scale: 0, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
-              transition={{ type: "spring", stiffness: 200, delay: 0.3 }}
+              transition={{ type: 'spring', stiffness: 200, delay: 0.3 }}
             >
               <motion.div
                 animate={{ rotate: 360 }}
-                transition={{ duration: 2, repeat: Number.POSITIVE_INFINITY, ease: "linear" }}
+                transition={{
+                  duration: 2,
+                  repeat: Number.POSITIVE_INFINITY,
+                  ease: 'linear',
+                }}
                 className="inline-block text-6xl mb-4"
               >
                 🎉
               </motion.div>
-              <h2 className="text-3xl font-bold text-primary mb-2">Congratulations!</h2>
+              <h2 className="text-3xl font-bold text-primary mb-2">
+                Congratulations!
+              </h2>
               <p className="text-white/70">Your trading box is now active</p>
             </motion.div>
-
             {/* Confirmation Card */}
             <motion.div
               initial={{ y: 50, opacity: 0 }}
@@ -211,12 +280,15 @@ export default function CreateBoxPage() {
               <Card className="bg-[#222222] border-primary glow-primary">
                 <CardHeader>
                   <CardTitle className="text-white">Box Details</CardTitle>
+                  <p className="font-semibold text-primary">{boxAddress}</p>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                       <p className="text-sm text-white/60">Token Type</p>
-                      <p className="font-semibold text-primary">{formData.tokenType}</p>
+                      <p className="font-semibold text-primary">
+                        {formData.tokenType}
+                      </p>
                     </div>
                     <div>
                       <p className="text-sm text-white/60">Token Amount</p>
@@ -225,17 +297,25 @@ export default function CreateBoxPage() {
                       </p>
                     </div>
                     <div>
-                      <p className="text-sm text-white/60">Estimated USD Value</p>
-                      <p className="font-semibold text-primary">${formData.estimatedUSD}</p>
+                      <p className="text-sm text-white/60">
+                        Estimated USD Value
+                      </p>
+                      <p className="font-semibold text-primary">
+                        ${formData.estimatedUSD}
+                      </p>
                     </div>
                     <div>
                       <p className="text-sm text-white/60">Deadline</p>
-                      <p className="font-semibold text-white">{new Date(formData.deadline).toLocaleString()}</p>
+                      <p className="font-semibold text-white">
+                        {new Date(formData.deadline).toLocaleString()}
+                      </p>
                     </div>
                     {formData.tokenAddress && (
                       <div className="md:col-span-2">
                         <p className="text-sm text-white/60">Token Address</p>
-                        <p className="font-mono text-sm text-white">{formData.tokenAddress}</p>
+                        <p className="font-mono text-sm text-white">
+                          {formData.tokenAddress}
+                        </p>
                       </div>
                     )}
                   </div>
@@ -247,58 +327,14 @@ export default function CreateBoxPage() {
                       onClick={handleWithdraw}
                       disabled={isSubmitting}
                     >
-                      {isSubmitting ? "Processing..." : "Withdraw (Available after deadline + 24h)"}
+                      {isSubmitting
+                        ? 'Processing...'
+                        : 'Withdraw (Available after deadline + 24h)'}
                     </Button>
                   </div>
                 </CardContent>
               </Card>
             </motion.div>
-
-            {/* Stats Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-              {[
-                {
-                  icon: DollarSign,
-                  label: "Transaction Cut",
-                  value: mockCreatedBoxStats.transactionCut,
-                },
-                {
-                  icon: TrendingUp,
-                  label: "Total Trades",
-                  value: mockCreatedBoxStats.numberOfTrades,
-                },
-                {
-                  icon: Users,
-                  label: "Unique Traders",
-                  value: mockCreatedBoxStats.uniqueTraders,
-                },
-                {
-                  icon: Wallet,
-                  label: "Total Volume",
-                  value: mockCreatedBoxStats.totalVolume,
-                },
-              ].map((stat, index) => (
-                <motion.div
-                  key={stat.label}
-                  initial={{ y: 30, opacity: 0 }}
-                  animate={{ y: 0, opacity: 1 }}
-                  transition={{ delay: 0.7 + index * 0.1 }}
-                  whileHover={{ y: -5, scale: 1.02 }}
-                >
-                  <Card className="bg-[#222222] border-[#222222] hover:border-primary transition-all duration-300">
-                    <CardContent className="p-4">
-                      <div className="flex items-center gap-2">
-                        <stat.icon className="h-4 w-4 text-primary" />
-                        <div>
-                          <p className="text-sm text-white/60">{stat.label}</p>
-                          <p className="font-semibold text-primary">{stat.value}</p>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </motion.div>
-              ))}
-            </div>
 
             {/* Trader Activity */}
             <Card className="bg-[#222222] border-[#222222] hover:border-primary transition-all duration-300">
@@ -312,26 +348,42 @@ export default function CreateBoxPage() {
                 <Table>
                   <TableHeader>
                     <TableRow className="border-[#222222]">
-                      <TableHead className="text-white/60">Trader Address</TableHead>
-                      <TableHead className="text-white/60">Bid Amount</TableHead>
-                      <TableHead className="text-white/60">Margin Profit</TableHead>
+                      <TableHead className="text-white/60">
+                        Trader Address
+                      </TableHead>
+                      <TableHead className="text-white/60">
+                        Bid Amount
+                      </TableHead>
+                      <TableHead className="text-white/60">
+                        Margin Profit
+                      </TableHead>
                       <TableHead className="text-white/60">Time</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {mockTraderActivity.map((activity) => (
-                      <TableRow key={activity.id} className="border-[#222222] hover:bg-black/50">
-                        <TableCell className="font-mono text-white">{shortenAddress(activity.trader)}</TableCell>
-                        <TableCell className="font-semibold text-white">{activity.bidAmount}</TableCell>
-                        <TableCell className="text-primary font-medium">+{activity.marginProfit}</TableCell>
-                        <TableCell className="text-white/60">{activity.timestamp.toLocaleString()}</TableCell>
+                      <TableRow
+                        key={activity.id}
+                        className="border-[#222222] hover:bg-black/50"
+                      >
+                        <TableCell className="font-mono text-white">
+                          {shortenAddress(activity.trader)}
+                        </TableCell>
+                        <TableCell className="font-semibold text-white">
+                          {activity.bidAmount}
+                        </TableCell>
+                        <TableCell className="text-primary font-medium">
+                          +{activity.marginProfit}
+                        </TableCell>
+                        <TableCell className="text-white/60">
+                          {activity.timestamp.toLocaleString()}
+                        </TableCell>
                       </TableRow>
                     ))}
                   </TableBody>
                 </Table>
               </CardContent>
             </Card>
-
             <div className="flex gap-4">
               <Link href="/" className="flex-1">
                 <Button
@@ -350,13 +402,11 @@ export default function CreateBoxPage() {
           </div>
         </main>
       </div>
-    )
+    );
   }
 
   return (
     <div className="min-h-screen bg-black">
-      <Header title="Create New SwapBox" subtitle="Set up your tokenized trading box" showCreateButton={false} />
-
       {/* Progress Indicator */}
       <div className="container mx-auto px-4 py-4">
         <div className="max-w-2xl mx-auto">
@@ -364,21 +414,28 @@ export default function CreateBoxPage() {
             {[1, 2, 3].map((step) => (
               <motion.div
                 key={step}
-                className={`flex items-center gap-2 ${currentStep >= step ? "text-primary" : "text-white/40"}`}
+                className={`flex items-center gap-2 ${
+                  currentStep >= step ? 'text-primary' : 'text-white/40'
+                }`}
                 animate={currentStep === step ? { scale: [1, 1.1, 1] } : {}}
-                transition={{ duration: 1, repeat: currentStep === step ? Number.POSITIVE_INFINITY : 0 }}
+                transition={{
+                  duration: 1,
+                  repeat: currentStep === step ? Number.POSITIVE_INFINITY : 0,
+                }}
               >
                 <div
                   className={`w-8 h-8 rounded-full flex items-center justify-center font-bold ${
-                    currentStep >= step ? "bg-primary text-black" : "bg-[#222222] text-white/40"
+                    currentStep >= step
+                      ? 'bg-primary text-black'
+                      : 'bg-[#222222] text-white/40'
                   }`}
                 >
                   {step}
                 </div>
                 <span className="text-sm font-medium">
-                  {step === 1 && "Configure"}
-                  {step === 2 && "Processing"}
-                  {step === 3 && "Complete"}
+                  {step === 1 && 'Configure'}
+                  {step === 2 && 'Processing'}
+                  {step === 3 && 'Complete'}
                 </span>
                 {step < 3 && <div className="w-8 h-0.5 bg-[#222222]" />}
               </motion.div>
@@ -400,23 +457,31 @@ export default function CreateBoxPage() {
               className="text-center"
               initial={{ scale: 0.8, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
-              transition={{ type: "spring", stiffness: 200 }}
+              transition={{ type: 'spring', stiffness: 200 }}
             >
               <motion.div
                 animate={{ rotate: 360 }}
-                transition={{ duration: 2, repeat: Number.POSITIVE_INFINITY, ease: "linear" }}
+                transition={{
+                  duration: 2,
+                  repeat: Number.POSITIVE_INFINITY,
+                  ease: 'linear',
+                }}
                 className="text-6xl mb-4"
               >
                 ⚡
               </motion.div>
-              <h2 className="text-2xl font-bold text-primary mb-2">Creating Your SwapBox</h2>
-              <p className="text-white/70">Please wait while we deploy your trading box...</p>
+              <h2 className="text-2xl font-bold text-primary mb-2">
+                Creating Your SwapBox
+              </h2>
+              <p className="text-white/70">
+                Please wait while we deploy your trading box...
+              </p>
               <motion.div className="w-64 h-2 bg-[#222222] rounded-full mx-auto mt-4 overflow-hidden">
                 <motion.div
                   className="h-full bg-primary rounded-full"
-                  initial={{ width: "0%" }}
-                  animate={{ width: "100%" }}
-                  transition={{ duration: 2.5, ease: "easeInOut" }}
+                  initial={{ width: '0%' }}
+                  animate={{ width: '100%' }}
+                  transition={{ duration: 2.5, ease: 'easeInOut' }}
                 />
               </motion.div>
             </motion.div>
@@ -429,7 +494,7 @@ export default function CreateBoxPage() {
         <div className="max-w-2xl mx-auto">
           {/* Wallet Connection Check */}
           <AnimatePresence>
-            {!isConnected && (
+            {!isAuthenticated && (
               <motion.div
                 className="mb-8 bg-[#222222] border border-primary/30 rounded-lg p-6"
                 initial={{ opacity: 0, y: -20 }}
@@ -442,8 +507,12 @@ export default function CreateBoxPage() {
                     <AlertCircle className="h-8 w-8 text-primary" />
                   </div>
                   <div>
-                    <h3 className="text-white font-bold text-xl">Wallet Required</h3>
-                    <p className="text-white/60">Please connect your wallet to create a SwapBox</p>
+                    <h3 className="text-white font-bold text-xl">
+                      Wallet Required
+                    </h3>
+                    <p className="text-white/60">
+                      Please connect your wallet to create a SwapBox
+                    </p>
                   </div>
                 </div>
               </motion.div>
@@ -466,29 +535,49 @@ export default function CreateBoxPage() {
                   </Label>
                   <Select
                     value={formData.tokenType}
-                    onValueChange={(value) => handleInputChange("tokenType", value)}
-                    disabled={!isConnected}
+                    onValueChange={(value) =>
+                      handleInputChange('tokenType', value)
+                    }
+                    disabled={!isAuthenticated}
                   >
                     <SelectTrigger className="bg-black border-[#222222] text-white focus:border-primary">
                       <SelectValue placeholder="Select token type" />
                     </SelectTrigger>
                     <SelectContent className="bg-[#222222] border-[#222222]">
-                      <SelectItem value="ETH" className="text-white hover:bg-black">
+                      <SelectItem
+                        value="ETH"
+                        className="text-white hover:bg-black"
+                      >
                         ETH - Ethereum
                       </SelectItem>
-                      <SelectItem value="BTC" className="text-white hover:bg-black">
+                      <SelectItem
+                        value="BTC"
+                        className="text-white hover:bg-black"
+                      >
                         WBTC - Wrapped Bitcoin
                       </SelectItem>
-                      <SelectItem value="USDC" className="text-white hover:bg-black">
+                      <SelectItem
+                        value="USDC"
+                        className="text-white hover:bg-black"
+                      >
                         USDC - USD Coin
                       </SelectItem>
-                      <SelectItem value="USDT" className="text-white hover:bg-black">
+                      <SelectItem
+                        value="USDT"
+                        className="text-white hover:bg-black"
+                      >
                         USDT - Tether
                       </SelectItem>
-                      <SelectItem value="LINK" className="text-white hover:bg-black">
+                      <SelectItem
+                        value="LINK"
+                        className="text-white hover:bg-black"
+                      >
                         LINK - Chainlink
                       </SelectItem>
-                      <SelectItem value="UNI" className="text-white hover:bg-black">
+                      <SelectItem
+                        value="UNI"
+                        className="text-white hover:bg-black"
+                      >
                         UNI - Uniswap
                       </SelectItem>
                     </SelectContent>
@@ -506,20 +595,22 @@ export default function CreateBoxPage() {
                     step="0.000001"
                     placeholder="Enter token amount"
                     value={formData.tokenAmount}
-                    onChange={(e) => handleInputChange("tokenAmount", e.target.value)}
+                    onChange={(e) =>
+                      handleInputChange('tokenAmount', e.target.value)
+                    }
                     required
-                    disabled={!isConnected}
+                    disabled={!isAuthenticated}
                     className="bg-black border-[#222222] text-white focus:border-primary"
                   />
                 </div>
 
                 {/* Token Address (for ERC20) */}
                 <AnimatePresence>
-                  {formData.tokenType && formData.tokenType !== "ETH" && (
+                  {formData.tokenType && formData.tokenType !== 'ETH' && (
                     <motion.div
                       className="space-y-2"
                       initial={{ height: 0, opacity: 0 }}
-                      animate={{ height: "auto", opacity: 1 }}
+                      animate={{ height: 'auto', opacity: 1 }}
                       exit={{ height: 0, opacity: 0 }}
                       transition={{ duration: 0.3 }}
                     >
@@ -530,11 +621,15 @@ export default function CreateBoxPage() {
                         id="tokenAddress"
                         placeholder="0x..."
                         value={formData.tokenAddress}
-                        onChange={(e) => handleInputChange("tokenAddress", e.target.value)}
-                        disabled={!isConnected}
+                        onChange={(e) =>
+                          handleInputChange('tokenAddress', e.target.value)
+                        }
+                        disabled={!isAuthenticated}
                         className="bg-black border-[#222222] text-white focus:border-primary"
                       />
-                      <p className="text-xs text-white/60">Leave empty to use default {formData.tokenType} contract</p>
+                      <p className="text-xs text-white/60">
+                        Leave empty to use default {formData.tokenType} contract
+                      </p>
                     </motion.div>
                   )}
                 </AnimatePresence>
@@ -547,7 +642,9 @@ export default function CreateBoxPage() {
                   <Input
                     id="estimatedUSD"
                     placeholder="Auto-calculated"
-                    value={formData.estimatedUSD ? `$${formData.estimatedUSD}` : ""}
+                    value={
+                      formData.estimatedUSD ? `$${formData.estimatedUSD}` : ''
+                    }
                     disabled
                     className="bg-black border-[#222222] text-primary"
                   />
@@ -562,10 +659,12 @@ export default function CreateBoxPage() {
                   <Input
                     type="datetime-local"
                     value={formData.deadline}
-                    onChange={(e) => handleInputChange("deadline", e.target.value)}
+                    onChange={(e) =>
+                      handleInputChange('deadline', e.target.value)
+                    }
                     min={new Date().toISOString().slice(0, 16)}
                     required
-                    disabled={!isConnected}
+                    disabled={!isAuthenticated}
                     className="bg-black border-[#222222] text-white focus:border-primary"
                   />
                   {formData.deadline && (
@@ -591,7 +690,9 @@ export default function CreateBoxPage() {
                     />
                   </div>
                   <p className="text-xs text-white/60">
-                    {isConnected ? "Connected wallet address (auto-filled)" : "Connect wallet to auto-fill"}
+                    {isAuthenticated
+                      ? 'Connected wallet address (auto-filled)'
+                      : 'Connect wallet to auto-fill'}
                   </p>
                 </div>
 
@@ -607,13 +708,17 @@ export default function CreateBoxPage() {
                     transition={{
                       duration: 1,
                       repeat: isSubmitting ? Number.POSITIVE_INFINITY : 0,
-                      ease: "linear",
+                      ease: 'linear',
                     }}
                   >
-                    {isSubmitting ? "⚡" : "🚀"}
+                    {isSubmitting ? '⚡' : '🚀'}
                   </motion.span>
                   <span className="ml-2">
-                    {!isConnected ? "Connect Wallet to Create" : isSubmitting ? "Creating Box..." : "Create SwapBox"}
+                    {!isAuthenticated
+                      ? 'Connect Wallet to Create'
+                      : isSubmitting
+                      ? 'Creating Box...'
+                      : 'Create SwapBox'}
                   </span>
                 </Button>
               </form>
@@ -622,5 +727,5 @@ export default function CreateBoxPage() {
         </div>
       </main>
     </div>
-  )
+  );
 }

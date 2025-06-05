@@ -1,27 +1,37 @@
-import type React from "react"
-import type { Metadata } from "next"
-import { Inter } from "next/font/google"
-import "./globals.css"
-import { WalletProvider } from "@/components/wallet-provider"
+'use client';
+import type React from 'react';
+import { Inter } from 'next/font/google';
+import './globals.css';
+import { usePrivy } from '@privy-io/react-auth';
+import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import Providers from '@/components/privyProvider';
+import Header from '@/components/header';
 
-const inter = Inter({ subsets: ["latin"] })
-
-export const metadata: Metadata = {
-  title: "SwapBox - Decentralized Token Trading Platform",
-  description: "Trade tokenized assets with competitive bidding on SwapBox",
-    generator: 'v0.dev'
-}
+const inter = Inter({ subsets: ['latin'] });
 
 export default function RootLayout({
   children,
 }: {
-  children: React.ReactNode
+  children: React.ReactNode;
 }) {
+  const { ready, authenticated } = usePrivy();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (ready && !authenticated) {
+      router.push('/create');
+    }
+  }, [ready, authenticated, router]);
+
   return (
     <html lang="en">
       <body className={inter.className}>
-        <WalletProvider>{children}</WalletProvider>
+        <Providers>
+          <Header />
+          {children}
+        </Providers>
       </body>
     </html>
-  )
+  );
 }
