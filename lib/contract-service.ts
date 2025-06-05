@@ -574,7 +574,6 @@ export const useSimpleContract = () => {
       // Get current array length before creating box
       let currentLength = 0;
       try {
-        // Keep checking until we get an error (end of array)
         while (true) {
           await contract.boxes(account, currentLength);
           currentLength++;
@@ -586,15 +585,35 @@ export const useSimpleContract = () => {
       console.log('Current box count before creation:', currentLength);
 
       const tx = await contract.createYourBox();
-      await tx.wait();
+      const receipt = await tx.wait();
 
-      // The new box index will be the previous length
-      const newBoxIndex = currentLength;
+      // ✅ Look for the event in the transaction receipt
+      const event = receipt.logs
+        .map((log) => {
+          try {
+            return contract.interface.parseLog(log);
+          } catch {
+            return null;
+          }
+        })
+        .find((parsed) => parsed && parsed.name === 'BoxEvent');
 
-      console.log('Box created with index:', newBoxIndex);
-      setShowSuccess(true);
+      if (event) {
+        const { boxAddress, owner, index } = event.args;
+        const e = event as EventLog;
+        console.log('📦 Event captured from tx:', {
+          boxAddress: e.args?.boxAdd,
+          creator: e.args?.initiator,
+          index: index.toString(),
+        });
 
-      return { index: newBoxIndex };
+        // Return the index from event (if you prefer it)
+        return { index: parseInt(index.toString()), boxAddress };
+      }
+
+      // fallback if no event
+      console.log('No BoxEvent emitted — using fallback index:', currentLength);
+      return { index: currentLength };
     } catch (error) {
       console.error('Error creating box:', error);
       throw error;
@@ -603,6 +622,7 @@ export const useSimpleContract = () => {
       setTimeout(() => setShowSuccess(false), 3000);
     }
   };
+
   const depositToBox = async (
     index: number,
     deadline: number,
@@ -709,21 +729,6 @@ export const useSimpleContract = () => {
     } finally {
       setIsSubmitting(false);
     }
-  };
-
-  const getFactoryContract = async () => {
-    if (!signer) {
-      await connectWallet();
-      if (!wallets || wallets.length === 0) {
-        throw new Error('No wallet available');
-      }
-      const wallet = wallets[0];
-      const privyProvider = await wallet.getEthereumProvider();
-      const ethersProvider = new ethers.BrowserProvider(privyProvider);
-      const ethersSigner = await ethersProvider.getSigner();
-      return new ethers.Contract(CONTRACT_ADDRESS, Box_ABI, ethersSigner);
-    }
-    return new ethers.Contract(CONTRACT_ADDRESS, Box_ABI, signer);
   };
 
   const getAllBoxes = async () => {
