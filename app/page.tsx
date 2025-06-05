@@ -240,89 +240,6 @@ export default function AllBoxesPage() {
           </motion.p>
         </motion.div>
 
-        {/* Stats Bar */}
-        {/* <motion.div
-          className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8"
-          initial={{ y: 30, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{ delay: 0.5, duration: 0.6 }}
-        >
-          <motion.div
-            className="bg-[#222222] p-4 rounded-lg border border-primary/20"
-            whileHover={{ scale: 1.02, borderColor: '#1DCD9F' }}
-            transition={{ type: 'spring', stiffness: 300 }}
-          >
-            <div className="flex items-center gap-3">
-              <Activity className="h-6 w-6 text-primary" />
-              <div>
-                <p className="text-white/60 text-sm">Active Boxes</p>
-                <p className="text-2xl font-bold text-white">
-                  {mockBoxes.length}
-                </p>
-              </div>
-            </div>
-          </motion.div>
-          <motion.div
-            className="bg-[#222222] p-4 rounded-lg border border-primary/20"
-            whileHover={{ scale: 1.02, borderColor: '#1DCD9F' }}
-            transition={{ type: 'spring', stiffness: 300 }}
-          >
-            <div className="flex items-center gap-3">
-              <Zap className="h-6 w-6 text-primary" />
-              <div>
-                <p className="text-white/60 text-sm">Total Volume</p>
-                <p className="text-2xl font-bold text-white">$2.1M</p>
-              </div>
-            </div>
-          </motion.div>
-          <motion.div
-            className="bg-[#222222] p-4 rounded-lg border border-primary/20"
-            whileHover={{ scale: 1.02, borderColor: '#1DCD9F' }}
-            transition={{ type: 'spring', stiffness: 300 }}
-          >
-            <div className="flex items-center gap-3">
-              <TrendingUp className="h-6 w-6 text-primary" />
-              <div>
-                <p className="text-white/60 text-sm">Active Traders</p>
-                <p className="text-2xl font-bold text-white">1,247</p>
-              </div>
-            </div>
-          </motion.div>
-        </motion.div> */}
-
-        {/* Not Connected Warning
-        <AnimatePresence>
-          <motion.div
-            className="mb-8 bg-[#222222] border border-primary/30 rounded-lg p-4"
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            transition={{ duration: 0.3 }}
-          >
-            <div className="flex items-center gap-3">
-              <div className="bg-primary/20 p-2 rounded-full">
-                <motion.div
-                  animate={{ rotate: [0, 10, -10, 0] }}
-                  transition={{
-                    duration: 2,
-                    repeat: Number.POSITIVE_INFINITY,
-                  }}
-                >
-                  <Zap className="h-6 w-6 text-primary" />
-                </motion.div>
-              </div>
-              <div>
-                <h3 className="text-white font-bold text-lg">
-                  Connect Your Wallet
-                </h3>
-                <p className="text-white/60">
-                  Connect your wallet to start trading and creating boxes
-                </p>
-              </div>
-            </div>
-          </motion.div>
-        </AnimatePresence> */}
-
         {/* Boxes Grid */}
         <motion.div
           className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
@@ -471,7 +388,7 @@ export default function AllBoxesPage() {
                   </div>
 
                   {/* Action Button */}
-                  <Link href={`/box/${box.address}/`} className="block">
+                  <Link href={`/box/${box.boxAddress}/`} className="block">
                     <motion.div
                       whileHover={{ scale: 1.02 }}
                       whileTap={{ scale: 0.98 }}

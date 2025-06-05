@@ -127,10 +127,6 @@ function CountdownTimer({ deadline }: { deadline: Date }) {
   );
 }
 
-function shortenAddress(address: string) {
-  return `${address.slice(0, 6)}...${address.slice(-4)}`;
-}
-
 export default function BoxInfoPage() {
   const params = useParams();
   const { connectWallet, account, getBoxData } = useSimpleContract();
@@ -143,8 +139,6 @@ export default function BoxInfoPage() {
   const isAuthenticated = privy.user !== undefined;
 
   const boxId = Number.parseInt(params.id as string);
-  const contractAdrress = '0x87Ca4FCc89F4c4118BcfAb72606217ea2AD26563';
-  // const boxDetails = mockBoxDetails[boxId as keyof typeof mockBoxDetails];
 
   const [boxDetails, setBoxDetails] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -152,7 +146,7 @@ export default function BoxInfoPage() {
   useEffect(() => {
     const fetchBoxDetails = async () => {
       try {
-        const data = await getBoxData(contractAdrress);
+        const data = await getBoxData(params.id as string);
         setBoxDetails(data);
         console.log(data);
       } catch (err) {
@@ -163,7 +157,7 @@ export default function BoxInfoPage() {
     };
 
     fetchBoxDetails();
-  }, [boxId]);
+  }, [params.id]);
 
   useEffect(() => {
     if (isAuthenticated && !account) {
