@@ -158,7 +158,8 @@ export default function AllBoxesPage() {
   const [hoveredCard, setHoveredCard] = useState<number | null>(null);
   const [boxList, setBoxList] = useState<any[]>([]);
 
-  const { getAllBoxes, connectWallet, account } = useSimpleContract();
+  const { getAllBoxes, getBoxData, connectWallet, account } =
+    useSimpleContract();
 
   const address = privy.user?.wallet?.address;
 
@@ -174,22 +175,45 @@ export default function AllBoxesPage() {
   useEffect(() => {
     if (!account) return;
 
-    const fetchBoxes = async () => {
+    // const fetchBoxes = async () => {
+
+    //   try {
+    //     const boxes = await getAllBoxes();
+    //     console.log('Fetched Boxes:', boxes);
+    //     setBoxList(boxes);
+    //   } catch (err) {
+    //     console.error('Failed to fetch boxes:', err);
+    //   }
+    // };
+
+    // fetchBoxes();
+
+    const fetchBoxesAndData = async () => {
       try {
-        const boxes = await getAllBoxes();
+        const boxes = await getAllBoxes(); // array of box addresses
         console.log('Fetched Boxes:', boxes);
-        setBoxList(boxes);
+
+        // fetch data for all boxes in parallel
+        const boxesData = await Promise.all(
+          boxes.map(async (boxAddress: string) => {
+            const data = await getBoxData(boxAddress);
+            return { boxAddress, data };
+          })
+        );
+
+        console.log('Boxes with data:', boxesData);
+        setBoxList(boxesData);
       } catch (err) {
-        console.error('Failed to fetch boxes:', err);
+        console.error('Failed to fetch boxes and data:', err);
       }
     };
 
-    fetchBoxes();
+    fetchBoxesAndData();
   }, [account]); // ⚠️ depends only on `account`
 
-  console.log('Privy user:', privy.user);
-  console.log('Wallets:', privy.user?.wallet);
-  console.log('Account:', account);
+  // console.log('Privy user:', privy.user);
+  // console.log('Wallets:', privy.user?.wallet);
+  // console.log('Account:', account);
 
   return (
     <div className="min-h-screen bg-black">
@@ -217,7 +241,7 @@ export default function AllBoxesPage() {
         </motion.div>
 
         {/* Stats Bar */}
-        <motion.div
+        {/* <motion.div
           className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8"
           initial={{ y: 30, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
@@ -264,7 +288,7 @@ export default function AllBoxesPage() {
               </div>
             </div>
           </motion.div>
-        </motion.div>
+        </motion.div> */}
 
         {/* Not Connected Warning
         <AnimatePresence>
@@ -306,30 +330,7 @@ export default function AllBoxesPage() {
           animate={{ opacity: 1 }}
           transition={{ delay: 0.7, duration: 0.5 }}
         >
-          {boxList.map((box) => (
-            <div key={box.index} className="border p-4 rounded mb-2">
-              <p>
-                <strong>Box Index:</strong> {box.index}
-              </p>
-              <p>
-                <strong>Box Address:</strong> {box.boxAddress}
-              </p>
-              <p>
-                <strong>Created By:</strong> {box.creator}
-              </p>
-              <p>
-                <strong>Tx Hash:</strong>{' '}
-                <a
-                  href={`https://etherscan.io/tx/${box.txHash}`}
-                  target="_blank"
-                  rel="noreferrer"
-                >
-                  View
-                </a>
-              </p>
-            </div>
-          ))}
-          {mockBoxes.map((box, index) => (
+          {boxList.map((box, index) => (
             <motion.div
               key={box.id}
               initial={{ y: 50, opacity: 0 }}
@@ -361,7 +362,8 @@ export default function AllBoxesPage() {
                       transition={{ type: 'spring', stiffness: 300 }}
                     >
                       <CardTitle className="text-lg text-white">
-                        {box.tokenAmount}
+                        {' '}
+                        {box.data?.basePrice ?? '0'} ETH
                       </CardTitle>
                     </motion.div>
                     <motion.div
@@ -369,11 +371,11 @@ export default function AllBoxesPage() {
                       transition={{ type: 'spring', stiffness: 400 }}
                     >
                       <Badge className="bg-primary text-black font-bold">
-                        {box.tokenType}
+                        {box.data?.basePrice ?? '0'} ETH{' '}
                       </Badge>
                     </motion.div>
                   </div>
-                  <CountdownTimer deadline={box.deadline} />
+                  {box.data && <CountdownTimer deadline={box.data.deadline} />}
                 </CardHeader>
 
                 <CardContent className="space-y-4">
@@ -389,7 +391,7 @@ export default function AllBoxesPage() {
                       </span>
                       <div className="flex items-center gap-2">
                         <span className="font-medium text-white">
-                          {box.marketPrice}
+                          {box.data?.marketPrice ?? '0'}
                         </span>
                         <motion.div
                           animate={{
@@ -429,7 +431,10 @@ export default function AllBoxesPage() {
                     >
                       <span className="text-sm text-white/60">USD Value</span>
                       <span className="text-sm font-medium text-primary">
-                        {box.marketPriceUSD}
+                        $
+                        {(
+                          parseFloat(box.data?.marketPrice ?? '0') * 2000
+                        ).toFixed(2)}
                       </span>
                     </motion.div>
 
@@ -440,7 +445,7 @@ export default function AllBoxesPage() {
                     >
                       <span className="text-sm text-white/60">Last Bid</span>
                       <span className="text-sm text-white">
-                        {box.lastBidPrice}
+                        {box.data?.lastBidPrice ?? '0'}
                       </span>
                     </motion.div>
 
@@ -460,16 +465,13 @@ export default function AllBoxesPage() {
                           repeat: Number.POSITIVE_INFINITY,
                         }}
                       >
-                        {box.totalBidders}
+                        {box.data?.totalBidders ?? 0}
                       </motion.span>
                     </motion.div>
                   </div>
 
                   {/* Action Button */}
-                  <Link
-                    href={`/box/${box.address}/${box.id}`}
-                    className="block"
-                  >
+                  <Link href={`/box/${box.address}/`} className="block">
                     <motion.div
                       whileHover={{ scale: 1.02 }}
                       whileTap={{ scale: 0.98 }}

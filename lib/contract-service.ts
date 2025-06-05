@@ -9,6 +9,7 @@ const CONTRACT_ADDRESS = process.env.NEXT_PUBLIC_CONTRACT_ADDRESS!;
 
 const CONTRACT_ABI = [
   'function createYourBox() external',
+  'function getAllBoxes() view returns (address[])',
   'function depositToBox(uint256 _index, uint256 _deadline, uint256 _strikeInUSDC) payable',
   'function obligate(address _contract) external',
   'function bid(address _contract) external payable',
@@ -708,23 +709,30 @@ export const useSimpleContract = () => {
   const getBoxData = async (boxAddress: string) => {
     setIsSubmitting(true);
     try {
-      const contract = await getContract(); // Added await here
-      const data = await contract.getBoxData(boxAddress); // no `.wait()`
+      const contract = await getContract();
+      const data = await contract.getBoxData(boxAddress);
+
+      console.log('Raw data for', boxAddress, ':', data);
+
+      if (
+        data.basePrice.toString() === '0' &&
+        data.currentWinner === ethers.ZeroAddress
+      ) {
+        console.warn('Uninitialized or empty box:', boxAddress);
+        return null;
+      }
+
       return {
         basePrice: ethers.formatEther(data.basePrice),
-        marketPrice: ethers.formatEther(data.marketPrice),
-        lastBidPrice: ethers.formatEther(data.lastBidPrice),
-        totalBidders: Number(data.totalBidders), // Use Number() instead of .toNumber()
-        currentHolder: data.currentHolder,
-        isExpired: data.isExpired,
-        deadline: new Date(Number(data.deadline) * 1000), // Use Number() for conversion
-        tokenType: data.tokenType,
-        totalTrades: Number(data.totalTrades), // Use Number() instead of .toNumber()
-        totalVolume: ethers.formatEther(data.totalVolume),
-        avgMargin: `${data.avgMargin.toString()}%`, // or process as needed
+        lastBidPrice: ethers.formatEther(data.lastPrice),
+        totalBidders: Number(data.totalBid),
+        currentHolder: data.currentWinner,
+        isExpired: Date.now() / 1000 > Number(data.bidEndTime),
+        deadline: new Date(Number(data.bidEndTime) * 1000),
+        tokenType: 'ETH',
       };
     } catch (error) {
-      console.error('Error fetching data:', error);
+      console.error(`Error fetching data for box ${boxAddress}:`, error);
       return null;
     } finally {
       setIsSubmitting(false);
@@ -732,23 +740,16 @@ export const useSimpleContract = () => {
   };
 
   const getAllBoxes = async () => {
-    const contract = await getContract(); // Added await here
+    try {
+      const contract = await getContract();
+      const data = await contract.getAllBoxes();
 
-    const filter = contract.filters.BoxEvent();
-    const events = await contract.queryFilter(filter, 0, 'latest');
-
-    console.log('Raw events in getAllBoxes:', events);
-
-    return events.map((event) => {
-      const e = event as EventLog;
-      return {
-        boxAddress: e.args?.boxAdd,
-        creator: e.args?.initiator,
-        index: Number(e.args?.index), // Use Number() instead of .toNumber()
-        blockNumber: e.blockNumber,
-        txHash: e.transactionHash,
-      };
-    });
+      console.log('Fetched Boxes:', data);
+      return data;
+    } catch (err) {
+      console.error('Error fetching boxes:', err);
+      return [];
+    }
   };
 
   // Auto-connect wallet when available
