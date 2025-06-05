@@ -19,6 +19,7 @@ import { Clock, User, Activity, Zap, AlertCircle } from 'lucide-react';
 import Link from 'next/link';
 import Header from '@/components/header';
 import { usePrivy } from '@privy-io/react-auth';
+import { useSimpleContract } from '@/lib/contract-service';
 
 // Mock data for box details
 const mockBoxDetails = {
@@ -132,6 +133,7 @@ function shortenAddress(address: string) {
 
 export default function BoxInfoPage() {
   const params = useParams();
+  const { connectWallet, account, getBoxData } = useSimpleContract();
   const [bidAmount, setBidAmount] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
@@ -141,7 +143,33 @@ export default function BoxInfoPage() {
   const isAuthenticated = privy.user !== undefined;
 
   const boxId = Number.parseInt(params.id as string);
-  const boxDetails = mockBoxDetails[boxId as keyof typeof mockBoxDetails];
+  const contractAdrress = '0x87Ca4FCc89F4c4118BcfAb72606217ea2AD26563';
+  // const boxDetails = mockBoxDetails[boxId as keyof typeof mockBoxDetails];
+
+  const [boxDetails, setBoxDetails] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchBoxDetails = async () => {
+      try {
+        const data = await getBoxData(contractAdrress);
+        setBoxDetails(data);
+        console.log(data);
+      } catch (err) {
+        console.error('Failed to fetch box data:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchBoxDetails();
+  }, [boxId]);
+
+  useEffect(() => {
+    if (isAuthenticated && !account) {
+      connectWallet().catch(console.error);
+    }
+  }, [isAuthenticated, account, connectWallet]);
 
   if (!boxDetails) {
     return (

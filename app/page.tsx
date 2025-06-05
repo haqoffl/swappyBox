@@ -8,11 +8,15 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { TrendingUp, TrendingDown, Clock, Zap, Activity } from 'lucide-react';
 import Header from '@/components/header';
+import { useSimpleContract } from '@/lib/contract-service'; // adjust path as needed
+import { usePrivy } from '@privy-io/react-auth';
 
 // Mock data for boxes
 const mockBoxes = [
   {
     id: 1,
+    address: '0x87Ca4FCc89F4c4118BcfAb72606217ea2AD26563',
+
     tokenAmount: '10 ETH',
     tokenType: 'ETH',
     deadline: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000),
@@ -150,12 +154,46 @@ function CountdownTimer({ deadline }: { deadline: Date }) {
 }
 
 export default function AllBoxesPage() {
+  const privy = usePrivy();
   const [hoveredCard, setHoveredCard] = useState<number | null>(null);
+  const [boxList, setBoxList] = useState<any[]>([]);
+
+  const { getAllBoxes, connectWallet, account } = useSimpleContract();
+
+  const address = privy.user?.wallet?.address;
+
+  const isAuthenticated = privy.user !== undefined;
+  // 1. Connect wallet when authenticated
+  useEffect(() => {
+    if (isAuthenticated && !account) {
+      connectWallet().catch(console.error);
+    }
+  }, [isAuthenticated, account]);
+
+  // 2. Fetch boxes only once account is ready
+  useEffect(() => {
+    if (!account) return;
+
+    const fetchBoxes = async () => {
+      try {
+        const boxes = await getAllBoxes();
+        console.log('Fetched Boxes:', boxes);
+        setBoxList(boxes);
+      } catch (err) {
+        console.error('Failed to fetch boxes:', err);
+      }
+    };
+
+    fetchBoxes();
+  }, [account]); // ⚠️ depends only on `account`
+
+  console.log('Privy user:', privy.user);
+  console.log('Wallets:', privy.user?.wallet);
+  console.log('Account:', account);
 
   return (
     <div className="min-h-screen bg-black">
       {/* Header */}
-      <Header />
 
       {/* Main Content */}
       <main className="container mx-auto px-4 py-8">
@@ -228,7 +266,7 @@ export default function AllBoxesPage() {
           </motion.div>
         </motion.div>
 
-        {/* Not Connected Warning */}
+        {/* Not Connected Warning
         <AnimatePresence>
           <motion.div
             className="mb-8 bg-[#222222] border border-primary/30 rounded-lg p-4"
@@ -259,7 +297,7 @@ export default function AllBoxesPage() {
               </div>
             </div>
           </motion.div>
-        </AnimatePresence>
+        </AnimatePresence> */}
 
         {/* Boxes Grid */}
         <motion.div
@@ -268,6 +306,29 @@ export default function AllBoxesPage() {
           animate={{ opacity: 1 }}
           transition={{ delay: 0.7, duration: 0.5 }}
         >
+          {boxList.map((box) => (
+            <div key={box.index} className="border p-4 rounded mb-2">
+              <p>
+                <strong>Box Index:</strong> {box.index}
+              </p>
+              <p>
+                <strong>Box Address:</strong> {box.boxAddress}
+              </p>
+              <p>
+                <strong>Created By:</strong> {box.creator}
+              </p>
+              <p>
+                <strong>Tx Hash:</strong>{' '}
+                <a
+                  href={`https://etherscan.io/tx/${box.txHash}`}
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  View
+                </a>
+              </p>
+            </div>
+          ))}
           {mockBoxes.map((box, index) => (
             <motion.div
               key={box.id}
@@ -405,7 +466,10 @@ export default function AllBoxesPage() {
                   </div>
 
                   {/* Action Button */}
-                  <Link href={`/box/${box.id}`} className="block">
+                  <Link
+                    href={`/box/${box.address}/${box.id}`}
+                    className="block"
+                  >
                     <motion.div
                       whileHover={{ scale: 1.02 }}
                       whileTap={{ scale: 0.98 }}

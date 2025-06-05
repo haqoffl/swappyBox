@@ -168,27 +168,40 @@ export default function CreateBoxPage() {
     setCurrentStep(2);
 
     try {
-      // Step 1: Create the box
-      await createBox();
+      // Step 1: Create box and get the actual index
+      console.log('Creating box...');
+      const boxResult = await createBox();
 
-      // Step 2: Deposit to the box (you might need to get the box index from an event or state)
-      // For now, using a placeholder index - you'll need to get this from your contract events
-      const boxIndex = 0; // This should come from the createBox transaction receipt
+      if (!boxResult) {
+        throw new Error('Failed to get box information after creation');
+      }
+
+      // Step 2: Get values dynamically from form
+      const boxIndex = boxResult.index; // Use the actual created box index
       const deadlineTimestamp = Math.floor(
         new Date(formData.deadline).getTime() / 1000
       );
       const strikeInUSDC = Math.floor(
-        parseFloat(formData.estimatedUSD.replace(/,/g, '')) * 1e6
-      ); // Convert to USDC format (6 decimals)
+        parseFloat(formData.estimatedUSD.replace(/,/g, '').replace('$', '')) *
+          1e6
+      );
+      const valueETH = formData.tokenAmount;
 
-      await depositToBox(boxIndex, deadlineTimestamp, strikeInUSDC);
+      console.log('Using box index:', boxIndex);
+      console.log('Deposit parameters:', {
+        boxIndex,
+        deadlineTimestamp,
+        strikeInUSDC,
+        valueETH,
+      });
+
+      // Step 3: Deposit to the newly created box
+      await depositToBox(boxIndex, deadlineTimestamp, strikeInUSDC, valueETH);
 
       setCreatedBoxIndex(boxIndex);
-      console.log('address :', depositToBox.address);
-      // showConfirmation will be set by the useEffect watching contractSuccess
     } catch (error) {
-      console.error('Error creating box:', error);
-      alert('Error creating box. Please try again.');
+      console.error('Error in box creation/deposit process:', error);
+      alert('Error creating box or depositing. Please try again.');
       setCurrentStep(1);
       setIsSubmitting(false);
     }
@@ -242,168 +255,168 @@ export default function CreateBoxPage() {
     // Add more mock data as needed
   ];
 
-  if (showConfirmation) {
-    return (
-      <div className="min-h-screen bg-black">
-        <main className="container mx-auto px-4 py-8">
-          <div className="max-w-4xl mx-auto space-y-6">
-            {/* Success Animation */}
-            <motion.div
-              className="text-center py-8"
-              initial={{ scale: 0, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              transition={{ type: 'spring', stiffness: 200, delay: 0.3 }}
-            >
-              <motion.div
-                animate={{ rotate: 360 }}
-                transition={{
-                  duration: 2,
-                  repeat: Number.POSITIVE_INFINITY,
-                  ease: 'linear',
-                }}
-                className="inline-block text-6xl mb-4"
-              >
-                🎉
-              </motion.div>
-              <h2 className="text-3xl font-bold text-primary mb-2">
-                Congratulations!
-              </h2>
-              <p className="text-white/70">Your trading box is now active</p>
-            </motion.div>
-            {/* Confirmation Card */}
-            <motion.div
-              initial={{ y: 50, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              transition={{ delay: 0.4, duration: 0.6 }}
-              whileHover={{ y: -5 }}
-            >
-              <Card className="bg-[#222222] border-primary glow-primary">
-                <CardHeader>
-                  <CardTitle className="text-white">Box Details</CardTitle>
-                  <p className="font-semibold text-primary">{boxAddress}</p>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <p className="text-sm text-white/60">Token Type</p>
-                      <p className="font-semibold text-primary">
-                        {formData.tokenType}
-                      </p>
-                    </div>
-                    <div>
-                      <p className="text-sm text-white/60">Token Amount</p>
-                      <p className="font-semibold text-white">
-                        {formData.tokenAmount} {formData.tokenType}
-                      </p>
-                    </div>
-                    <div>
-                      <p className="text-sm text-white/60">
-                        Estimated USD Value
-                      </p>
-                      <p className="font-semibold text-primary">
-                        ${formData.estimatedUSD}
-                      </p>
-                    </div>
-                    <div>
-                      <p className="text-sm text-white/60">Deadline</p>
-                      <p className="font-semibold text-white">
-                        {new Date(formData.deadline).toLocaleString()}
-                      </p>
-                    </div>
-                    {formData.tokenAddress && (
-                      <div className="md:col-span-2">
-                        <p className="text-sm text-white/60">Token Address</p>
-                        <p className="font-mono text-sm text-white">
-                          {formData.tokenAddress}
-                        </p>
-                      </div>
-                    )}
-                  </div>
+  // if (showConfirmation) {
+  //   return (
+  //     // <div className="min-h-screen bg-black">
+  //     //   <main className="container mx-auto px-4 py-8">
+  //     //     <div className="max-w-4xl mx-auto space-y-6">
+  //     //       {/* Success Animation */}
+  //     //       <motion.div
+  //     //         className="text-center py-8"
+  //     //         initial={{ scale: 0, opacity: 0 }}
+  //     //         animate={{ scale: 1, opacity: 1 }}
+  //     //         transition={{ type: 'spring', stiffness: 200, delay: 0.3 }}
+  //     //       >
+  //     //         <motion.div
+  //     //           animate={{ rotate: 360 }}
+  //     //           transition={{
+  //     //             duration: 2,
+  //     //             repeat: Number.POSITIVE_INFINITY,
+  //     //             ease: 'linear',
+  //     //           }}
+  //     //           className="inline-block text-6xl mb-4"
+  //     //         >
+  //     //           🎉
+  //     //         </motion.div>
+  //     //         <h2 className="text-3xl font-bold text-primary mb-2">
+  //     //           Congratulations!
+  //     //         </h2>
+  //     //         <p className="text-white/70">Your trading box is now active</p>
+  //     //       </motion.div>
+  //     //       {/* Confirmation Card */}
+  //     //       <motion.div
+  //     //         initial={{ y: 50, opacity: 0 }}
+  //     //         animate={{ y: 0, opacity: 1 }}
+  //     //         transition={{ delay: 0.4, duration: 0.6 }}
+  //     //         whileHover={{ y: -5 }}
+  //     //       >
+  //     //         <Card className="bg-[#222222] border-primary glow-primary">
+  //     //           <CardHeader>
+  //     //             <CardTitle className="text-white">Box Details</CardTitle>
+  //     //             <p className="font-semibold text-primary">{boxAddress}</p>
+  //     //           </CardHeader>
+  //     //           <CardContent className="space-y-4">
+  //     //             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+  //     //               <div>
+  //     //                 <p className="text-sm text-white/60">Token Type</p>
+  //     //                 <p className="font-semibold text-primary">
+  //     //                   {formData.tokenType}
+  //     //                 </p>
+  //     //               </div>
+  //     //               <div>
+  //     //                 <p className="text-sm text-white/60">Token Amount</p>
+  //     //                 <p className="font-semibold text-white">
+  //     //                   {formData.tokenAmount} {formData.tokenType}
+  //     //                 </p>
+  //     //               </div>
+  //     //               <div>
+  //     //                 <p className="text-sm text-white/60">
+  //     //                   Estimated USD Value
+  //     //                 </p>
+  //     //                 <p className="font-semibold text-primary">
+  //     //                   ${formData.estimatedUSD}
+  //     //                 </p>
+  //     //               </div>
+  //     //               <div>
+  //     //                 <p className="text-sm text-white/60">Deadline</p>
+  //     //                 <p className="font-semibold text-white">
+  //     //                   {new Date(formData.deadline).toLocaleString()}
+  //     //                 </p>
+  //     //               </div>
+  //     //               {formData.tokenAddress && (
+  //     //                 <div className="md:col-span-2">
+  //     //                   <p className="text-sm text-white/60">Token Address</p>
+  //     //                   <p className="font-mono text-sm text-white">
+  //     //                     {formData.tokenAddress}
+  //     //                   </p>
+  //     //                 </div>
+  //     //               )}
+  //     //             </div>
 
-                  <div className="pt-4 border-t border-[#222222]">
-                    <Button
-                      variant="outline"
-                      className="w-full md:w-auto border-primary text-primary hover:bg-primary hover:text-black"
-                      onClick={handleWithdraw}
-                      disabled={isSubmitting}
-                    >
-                      {isSubmitting
-                        ? 'Processing...'
-                        : 'Withdraw (Available after deadline + 24h)'}
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            </motion.div>
+  //     //             <div className="pt-4 border-t border-[#222222]">
+  //     //               <Button
+  //     //                 variant="outline"
+  //     //                 className="w-full md:w-auto border-primary text-primary hover:bg-primary hover:text-black"
+  //     //                 onClick={handleWithdraw}
+  //     //                 disabled={isSubmitting}
+  //     //               >
+  //     //                 {isSubmitting
+  //     //                   ? 'Processing...'
+  //     //                   : 'Withdraw (Available after deadline + 24h)'}
+  //     //               </Button>
+  //     //             </div>
+  //     //           </CardContent>
+  //     //         </Card>
+  //     //       </motion.div>
 
-            {/* Trader Activity */}
-            <Card className="bg-[#222222] border-[#222222] hover:border-primary transition-all duration-300">
-              <CardHeader>
-                <CardTitle className="text-white flex items-center gap-2">
-                  <Zap className="h-5 w-5 text-primary" />
-                  Recent Trader Activity
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <Table>
-                  <TableHeader>
-                    <TableRow className="border-[#222222]">
-                      <TableHead className="text-white/60">
-                        Trader Address
-                      </TableHead>
-                      <TableHead className="text-white/60">
-                        Bid Amount
-                      </TableHead>
-                      <TableHead className="text-white/60">
-                        Margin Profit
-                      </TableHead>
-                      <TableHead className="text-white/60">Time</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {mockTraderActivity.map((activity) => (
-                      <TableRow
-                        key={activity.id}
-                        className="border-[#222222] hover:bg-black/50"
-                      >
-                        <TableCell className="font-mono text-white">
-                          {shortenAddress(activity.trader)}
-                        </TableCell>
-                        <TableCell className="font-semibold text-white">
-                          {activity.bidAmount}
-                        </TableCell>
-                        <TableCell className="text-primary font-medium">
-                          +{activity.marginProfit}
-                        </TableCell>
-                        <TableCell className="text-white/60">
-                          {activity.timestamp.toLocaleString()}
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </CardContent>
-            </Card>
-            <div className="flex gap-4">
-              <Link href="/" className="flex-1">
-                <Button
-                  variant="outline"
-                  className="w-full border-primary text-primary hover:bg-primary hover:text-black"
-                >
-                  Back to All Boxes
-                </Button>
-              </Link>
-              <Link href="/box/7" className="flex-1">
-                <Button className="w-full bg-primary hover:bg-[#169976] text-black font-bold glow-primary-strong">
-                  View Your Box
-                </Button>
-              </Link>
-            </div>
-          </div>
-        </main>
-      </div>
-    );
-  }
+  //     //       {/* Trader Activity */}
+  //     //       <Card className="bg-[#222222] border-[#222222] hover:border-primary transition-all duration-300">
+  //     //         <CardHeader>
+  //     //           <CardTitle className="text-white flex items-center gap-2">
+  //     //             <Zap className="h-5 w-5 text-primary" />
+  //     //             Recent Trader Activity
+  //     //           </CardTitle>
+  //     //         </CardHeader>
+  //     //         <CardContent>
+  //     //           <Table>
+  //     //             <TableHeader>
+  //     //               <TableRow className="border-[#222222]">
+  //     //                 <TableHead className="text-white/60">
+  //     //                   Trader Address
+  //     //                 </TableHead>
+  //     //                 <TableHead className="text-white/60">
+  //     //                   Bid Amount
+  //     //                 </TableHead>
+  //     //                 <TableHead className="text-white/60">
+  //     //                   Margin Profit
+  //     //                 </TableHead>
+  //     //                 <TableHead className="text-white/60">Time</TableHead>
+  //     //               </TableRow>
+  //     //             </TableHeader>
+  //     //             <TableBody>
+  //     //               {mockTraderActivity.map((activity) => (
+  //     //                 <TableRow
+  //     //                   key={activity.id}
+  //     //                   className="border-[#222222] hover:bg-black/50"
+  //     //                 >
+  //     //                   <TableCell className="font-mono text-white">
+  //     //                     {shortenAddress(activity.trader)}
+  //     //                   </TableCell>
+  //     //                   <TableCell className="font-semibold text-white">
+  //     //                     {activity.bidAmount}
+  //     //                   </TableCell>
+  //     //                   <TableCell className="text-primary font-medium">
+  //     //                     +{activity.marginProfit}
+  //     //                   </TableCell>
+  //     //                   <TableCell className="text-white/60">
+  //     //                     {activity.timestamp.toLocaleString()}
+  //     //                   </TableCell>
+  //     //                 </TableRow>
+  //     //               ))}
+  //     //             </TableBody>
+  //     //           </Table>
+  //     //         </CardContent>
+  //     //       </Card>
+  //     //       <div className="flex gap-4">
+  //     //         <Link href="/" className="flex-1">
+  //     //           <Button
+  //     //             variant="outline"
+  //     //             className="w-full border-primary text-primary hover:bg-primary hover:text-black"
+  //     //           >
+  //     //             Back to All Boxes
+  //     //           </Button>
+  //     //         </Link>
+  //     //         <Link href="/box/7" className="flex-1">
+  //     //           <Button className="w-full bg-primary hover:bg-[#169976] text-black font-bold glow-primary-strong">
+  //     //             View Your Box
+  //     //           </Button>
+  //     //         </Link>
+  //     //       </div>
+  //     //     </div>
+  //     //   </main>
+  //     // </div>
+  //   );
+  // }
 
   return (
     <div className="min-h-screen bg-black">
