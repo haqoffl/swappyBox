@@ -17,6 +17,50 @@
 				"type": "constructor"
 			},
 			{
+				"anonymous": false,
+				"inputs": [
+					{
+						"indexed": false,
+						"internalType": "address",
+						"name": "bidder",
+						"type": "address"
+					},
+					{
+						"indexed": false,
+						"internalType": "uint256",
+						"name": "BidPrice",
+						"type": "uint256"
+					}
+				],
+				"name": "BidPrice",
+				"type": "event"
+			},
+			{
+				"anonymous": false,
+				"inputs": [
+					{
+						"indexed": true,
+						"internalType": "address",
+						"name": "boxAdd",
+						"type": "address"
+					},
+					{
+						"indexed": true,
+						"internalType": "address",
+						"name": "initiator",
+						"type": "address"
+					},
+					{
+						"indexed": false,
+						"internalType": "uint256",
+						"name": "index",
+						"type": "uint256"
+					}
+				],
+				"name": "BoxEvent",
+				"type": "event"
+			},
+			{
 				"inputs": [
 					{
 						"internalType": "address",
@@ -333,11 +377,11 @@
 			]
 		},
 		"contracts/SwappyBox/SwappBox.sol": {
-			"keccak256": "0xac599f36981cb179da2c6e5460523b724dbedc9636c712274cee92e54b776b08",
+			"keccak256": "0x8b80fd6c615d11f93253a93609f6c35e18ee1a894d1c4185390bb547f4b8a16a",
 			"license": "GPL-3.0",
 			"urls": [
-				"bzz-raw://8d2f21e1afb45ebb219384ba663dd314fb0310e953ec254cb8eceaede7a673da",
-				"dweb:/ipfs/QmSTioYLhh3o35bAUo8NqDNtTMv4bCayGRwBXD6bv6B5NB"
+				"bzz-raw://af1d5ed0ce520f205f13faf8bb2352824008810d14eeffdf5701cdd62c7e7867",
+				"dweb:/ipfs/Qmd19TKXVcQmZrMdRA3WLdP6g4VoZVppDFbeLUNzSzJawK"
 			]
 		}
 	},
