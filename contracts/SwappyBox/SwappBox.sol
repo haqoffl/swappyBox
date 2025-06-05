@@ -6,7 +6,8 @@ import "./IERC20.sol";
 import "./Box.sol";
 
 contract SwappyBox{
-
+    event BoxEvent(address indexed  boxAdd,address indexed initiator, uint index);
+    event BidPrice(address bidder, uint BidPrice);
     Box public box;
     struct BidTrack{
         uint bidInitialTime;
@@ -29,6 +30,7 @@ contract SwappyBox{
     function createYourBox() public {
         Box bx = new Box();
         boxes[msg.sender].push(address(bx));
+        emit BoxEvent(address(bx),msg.sender,boxes[msg.sender].length-1);
 
     }
 
@@ -70,6 +72,8 @@ contract SwappyBox{
 
         // require(boxData[_contract].bidEndTime < block.timestamp);
         // boxData[_contract].totalBid = 0;
+
+        emit BidPrice(msg.sender,bidAmount);
     }
     
     function withdraw(address _contract) public{
@@ -102,3 +106,4 @@ contract SwappyBox{
 3.obliigation, stable coin only allow!. - done have to check
 4. events emitting!.
 */
+
