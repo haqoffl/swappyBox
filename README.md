@@ -3,7 +3,7 @@
 SwappyBox is a fun and experimental take on financial options combined with dynamic auctions and gamified speculation. Think of it as a tradeable right to buy cryptos at a fixed price (strike price), but with a twist — the right itself can be bid on and swapped by others, and only the final holder can exercise it. Intermediate holders can profit by just flipping their position!
 
 ---
-## 🧠 What is SwappyBox?
+## What is SwappyBox?
 
 SwappyBox is a decentralized protocol where:
 
@@ -15,18 +15,18 @@ SwappyBox is a decentralized protocol where:
 
 ---
 
-## 🚀 Why SwappyBox?
+## Why SwappyBox?
 
 Traditional options are rigid, slightly centralized, and not fun to use. SwappyBox brings (note it not option but similar to option):
 
-- 💸 **Open access** to earn from speculation.
-- 🧠 **Game-like bidding** wars and box sniping.
-- 🔁 **Dynamic ownership** — box moves only when someone outbids the current holder.
-- 📈 **Pool initiators earn passive income**: 0.5% fee from each bid transaction.
+- **Open access** to earn from speculation.
+- **Game-like bidding** wars and box sniping.
+- **Dynamic ownership** — box moves only when someone outbids the current holder.
+- **Pool initiators earn passive income**: 0.5% fee from each bid transaction.
 
 ---
 
-## 🛠️ What Problem Does It Solve?
+##  What Problem Does It Solve?
 
 - **Barrier to options trading** is high — SwappyBox makes it accessible and interactive.
 - **Speculation is dry** — we add a **fun twist**, letting users trade positions, not just assets.
@@ -34,18 +34,18 @@ Traditional options are rigid, slightly centralized, and not fun to use. SwappyB
 
 ---
 
-## 💥 Features
+## Features
 
-- ✅ Anyone can create a box by locking cryptos with a strike price and expiry.
-- 🔁 Boxes are bid-on and swapped dynamically using price escalation or AMM estimates.
-- 💰 Initiators earn **0.5% fee** on every bid transaction.
-- 📈 Traders profit when others outbid them.
-- 🧠 AMM adjusts floor price based on demand (active bidders and time).
-- ⏱ Final holder can choose to **exercise** or **let it expire** (no refund if not exercised).
+- Anyone can create a box by locking cryptos with a strike price and expiry.
+- Boxes are bid-on and swapped dynamically using price escalation or AMM estimates.
+- Initiators earn **0.5% fee** on every bid transaction.
+- Traders profit when others outbid them.
+- AMM adjusts floor price based on demand (active bidders and time).
+- Final holder can choose to **exercise** or **let it expire** (no refund if not exercised).
 
 ---
 
-## 🎯 Example Flow
+## Example Flow
 
 1. **Alice** creates a SwappyBox with:
    - 1 crypto(WND) deposit
@@ -72,7 +72,7 @@ Traditional options are rigid, slightly centralized, and not fun to use. SwappyB
 
 ---
 
-## 💸 Incentives Summary
+## Incentives Summary
 
 | Role | Incentive |
 |------|-----------|
@@ -88,7 +88,7 @@ Traditional options are rigid, slightly centralized, and not fun to use. SwappyB
 
 
 
-## 🧊 Disclaimer
+##  Disclaimer
 
 SwappyBox is an experimental and gamified protocol. It's not meant for real financial trading — play responsibly and DYOR.
 
