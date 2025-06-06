@@ -532,15 +532,40 @@ export const useSimpleContract = () => {
   const [account, setAccount] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
+  const [selectedWalletType, setSelectedWalletType] = useState<string | null>(
+    null
+  );
 
-  // Connect wallet via Privy
+  // Find the preferred wallet (Talisman in this case)
+  const getPreferredWallet = () => {
+    if (!wallets || wallets.length === 0) return null;
+
+    // Look for Talisman wallet first
+    const talismanWallet = wallets.find(
+      (wallet) =>
+        wallet.walletClientType === 'talisman' ||
+        wallet.connectorType === 'talisman'
+    );
+
+    if (talismanWallet) {
+      return talismanWallet;
+    }
+
+    // Fallback to first available wallet
+    return wallets[0];
+  };
+
+  // Connect to the preferred wallet
   const connectWallet = async () => {
-    if (!wallets || wallets.length === 0) {
+    const preferredWallet = getPreferredWallet();
+
+    if (!preferredWallet) {
       throw new Error('No wallet connected via Privy');
     }
 
-    const wallet = wallets[0];
-    const privyProvider = await wallet.getEthereumProvider();
+    console.log('Connecting to wallet:', preferredWallet.walletClientType);
+
+    const privyProvider = await preferredWallet.getEthereumProvider();
     const ethersProvider = new ethers.BrowserProvider(privyProvider);
     const ethersSigner = await ethersProvider.getSigner();
     const address = await ethersSigner.getAddress();
@@ -548,6 +573,7 @@ export const useSimpleContract = () => {
     setProvider(ethersProvider);
     setSigner(ethersSigner);
     setAccount(address);
+    setSelectedWalletType(preferredWallet.walletClientType);
   };
 
   const getContract = async () => {
@@ -555,16 +581,39 @@ export const useSimpleContract = () => {
     if (!signer) {
       await connectWallet();
       // After connecting, we need to get the fresh signer
-      if (!wallets || wallets.length === 0) {
+      const preferredWallet = getPreferredWallet();
+      if (!preferredWallet) {
         throw new Error('No wallet available');
       }
-      const wallet = wallets[0];
-      const privyProvider = await wallet.getEthereumProvider();
+      const privyProvider = await preferredWallet.getEthereumProvider();
       const ethersProvider = new ethers.BrowserProvider(privyProvider);
       const ethersSigner = await ethersProvider.getSigner();
       return new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, ethersSigner);
     }
     return new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, signer);
+  };
+
+  // Add a manual wallet switcher function
+  const switchWallet = async (walletType: string) => {
+    const targetWallet = wallets?.find(
+      (wallet) =>
+        wallet.walletClientType === walletType ||
+        wallet.connectorType === walletType
+    );
+
+    if (!targetWallet) {
+      throw new Error(`Wallet ${walletType} not found`);
+    }
+
+    const privyProvider = await targetWallet.getEthereumProvider();
+    const ethersProvider = new ethers.BrowserProvider(privyProvider);
+    const ethersSigner = await ethersProvider.getSigner();
+    const address = await ethersSigner.getAddress();
+
+    setProvider(ethersProvider);
+    setSigner(ethersSigner);
+    setAccount(address);
+    setSelectedWalletType(targetWallet.walletClientType);
   };
 
   const createBox = async () => {
@@ -590,14 +639,14 @@ export const useSimpleContract = () => {
 
       // ✅ Look for the event in the transaction receipt
       const event = receipt.logs
-        .map((log) => {
+        .map((log: any) => {
           try {
             return contract.interface.parseLog(log);
           } catch {
             return null;
           }
         })
-        .find((parsed) => parsed && parsed.name === 'BoxEvent');
+        .find((parsed: any) => parsed && parsed.name === 'BoxEvent');
 
       if (event) {
         const { boxAddress, owner, index } = event.args;
@@ -763,13 +812,13 @@ export const useSimpleContract = () => {
   }, [wallets, signer]);
 
   // Optional: listen for wallet/account changes
-  useEffect(() => {
-    if (typeof window !== 'undefined' && window.ethereum) {
-      window.ethereum.on('accountsChanged', (accounts: string[]) => {
-        setAccount(accounts.length > 0 ? accounts[0] : null);
-      });
-    }
-  }, []);
+  // useEffect(() => {
+  //   if (typeof window !== 'undefined' && window.ethereum) {
+  //     window.ethereum.on('accountsChanged', (accounts: string[]) => {
+  //       setAccount(accounts.length > 0 ? accounts[0] : null);
+  //     });
+  //   }
+  // }, []);
 
   return {
     connectWallet,

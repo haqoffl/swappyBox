@@ -20,8 +20,6 @@ import Link from 'next/link';
 import Header from '@/components/header';
 import { usePrivy } from '@privy-io/react-auth';
 import { useSimpleContract } from '@/lib/contract-service';
-import HandleBid from '@/components/handlebid';
-import tradingHistory from '@/components/tradingHistory';
 
 const mockTradeHistory = [
   {

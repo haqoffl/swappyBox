@@ -17,44 +17,45 @@ export default function Providers({ children }: { children: React.ReactNode }) {
       config={{
         supportedChains: [
           {
-            id: 84532,
-            name: 'Base Sepolia',
+            id: 420420421, // Replace with the actual chain ID
+            name: 'Westend Asset Hub',
             nativeCurrency: {
-              name: 'Ether',
-              symbol: 'ETH',
+              name: 'Paseo Token',
+              symbol: 'WND',
               decimals: 18,
             },
             rpcUrls: {
               default: {
-                http: ['https://sepolia.base.org'],
+                http: ['https://testnet-passet-hub-eth-rpc.polkadot.io/'], // Replace with actual RPC
               },
             },
             blockExplorers: {
               default: {
-                name: 'BaseScan',
-                url: 'https://sepolia.basescan.org',
+                name: 'Paseo Explorer',
+                url: 'https://blockscout-passet-hub.parity-testnet.parity.io/', // Replace with actual explorer
               },
             },
             testnet: true,
           },
         ],
+
         defaultChain: {
-          id: 84532,
-          name: 'Base Sepolia',
+          id: 420420421, // Replace with the actual chain ID
+          name: 'Westend Asset Hub',
           nativeCurrency: {
-            name: 'Ether',
-            symbol: 'ETH',
+            name: 'Paseo Token',
+            symbol: 'WND',
             decimals: 18,
           },
           rpcUrls: {
             default: {
-              http: ['https://sepolia.base.org'],
+              http: ['https://testnet-passet-hub-eth-rpc.polkadot.io/'], // Replace with actual RPC
             },
           },
           blockExplorers: {
             default: {
-              name: 'BaseScan',
-              url: 'https://sepolia.basescan.org',
+              name: 'Paseo Explorer',
+              url: 'https://blockscout-passet-hub.parity-testnet.parity.io/', // Replace with actual explorer
             },
           },
           testnet: true,
