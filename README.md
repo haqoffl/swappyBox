@@ -82,6 +82,42 @@ Traditional options are rigid, slightly centralized, and not fun to use. SwappyB
 
 ---
 
+## What We Have Covered
+
+SwappyBox is already feature-rich with the following components implemented:
+
+   - ETH-based SwappyBox creation with strike price and expiry.
+
+   - Dynamic box bidding — only higher bids accepted.
+
+   - Profit logic for traders (margin from new bids).
+
+   - Demand-based AMM pricing floor to avoid underbidding.
+
+   - Pool initiator fees — 0.5% from every bid transaction.
+
+   - Final holder right to exercise or let expire.
+
+   - Smart contract factory for deploying multiple boxes.
+
+## Future Enhancements
+
+SwappyBox is just the beginning. Planned features include:
+
+   - ERC20 Support
+    Let initiators use any ERC20 token (e.g., USDC, DAI, WETH) as deposit, not just ETH.
+
+    - Flexible Event Emitting
+    Improved and granular event logs for better integration with frontends, analytics, and The Graph.
+
+   - Real-time Bid Sharing
+    Push latest bids to a frontend in real-time via WebSocket or events → frontend bridge → notify all bidders instantly.
+
+    - Integrating Obligation & withdraw with contract which is already
+    implemented
+
+
+
 ## 🧪 Try It Out
 
 ---
