@@ -1,16 +1,69 @@
-'use client';
+import React, { useEffect, useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
+import { AlertCircle, Zap } from 'lucide-react';
+import { usePrivy } from '@privy-io/react-auth';
+import { useSimpleContract } from '@/lib/contract-service';
+import { Input } from './ui/input';
+import { Button } from './ui/button';
 
-import React from 'react';
-import { motion } from 'framer-motion';
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
-import { Zap, AlertCircle } from 'lucide-react';
+const handlebid = () => {
+  const privy = usePrivy();
+  const {
+    connectWallet,
+    account,
+    isSubmitting: contractSubmitting,
+    showSuccess: contractSuccess,
+  } = useSimpleContract();
+  const [bidAmount, setBidAmount] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showSuccess, setShowSuccess] = useState(false);
 
-const HandleBid() => {
- 
+  const address = privy.user?.wallet?.address;
+  const isAuthenticated = privy.user !== undefined;
 
-  
+  useEffect(() => {
+    if (isAuthenticated && !account) {
+      connectWallet().catch(console.error);
+    }
+  }, [isAuthenticated, account, connectWallet]);
+
+  const handleBid = async () => {
+    if (!isAuthenticated || !bidAmount || !boxDetails) return;
+
+    try {
+      setIsSubmitting(true);
+
+      const boxAddress = boxDetails.boxAddress || params.id; // Adjust based on your actual box ID logic
+      await bid(boxAddress, bidAmount);
+
+      setShowSuccess(true);
+      setBidAmount('');
+    } catch (err) {
+      console.error('Bid failed:', err);
+    } finally {
+      setIsSubmitting(false);
+      setTimeout(() => setShowSuccess(false), 3000);
+    }
+  };
+  const handleBid = async () => {
+    if (!isAuthenticated || !bidAmount || !boxDetails) return;
+
+    try {
+      setIsSubmitting(true);
+
+      const boxAddress = boxDetails.boxAddress || params.id; // Adjust based on your actual box ID logic
+      await bid(boxAddress, bidAmount);
+
+      setShowSuccess(true);
+      setBidAmount('');
+    } catch (err) {
+      console.error('Bid failed:', err);
+    } finally {
+      setIsSubmitting(false);
+      setTimeout(() => setShowSuccess(false), 3000);
+    }
+  };
 
   return (
     <motion.div
@@ -44,7 +97,7 @@ const HandleBid() => {
             <>
               <div className="space-y-2">
                 <label className="text-sm font-medium text-white">
-                  Bid Amount ({boxDetails.tokenType})
+                  Bid Amount
                 </label>
                 <motion.div
                   whileFocus={{ scale: 1.02 }}
@@ -59,12 +112,10 @@ const HandleBid() => {
                     className="bg-black border-[#222222] text-white focus:border-primary"
                   />
                 </motion.div>
-
                 <p className="text-xs text-white/60">
                   Minimum bid: {boxDetails.lastBidPrice} + 0.01{' '}
                   {boxDetails.tokenType}
                 </p>
-                <p className="text-white">Address: {address}</p>
               </div>
 
               <motion.div
@@ -123,4 +174,4 @@ const HandleBid() => {
   );
 };
 
-export default HandleBid;
+export default handlebid;

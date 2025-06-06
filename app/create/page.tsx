@@ -99,11 +99,10 @@ export default function CreateBoxPage() {
     }
   }, [isAuthenticated, account, connectWallet]);
 
-  // Set default deadline to 24 hours from now
   useEffect(() => {
-    const tomorrow = new Date();
-    tomorrow.setDate(tomorrow.getDate() + 1);
-    const defaultDeadline = tomorrow.toISOString().slice(0, 16);
+    const nextWeek = new Date();
+    nextWeek.setDate(nextWeek.getDate() + 7); // Add 7 days (1 week)
+    const defaultDeadline = nextWeek.toISOString().slice(0, 16);
     setFormData((prev) => ({
       ...prev,
       deadline: defaultDeadline,
@@ -569,36 +568,6 @@ export default function CreateBoxPage() {
                         className="text-white hover:bg-black"
                       >
                         ETH - Ethereum
-                      </SelectItem>
-                      <SelectItem
-                        value="BTC"
-                        className="text-white hover:bg-black"
-                      >
-                        WBTC - Wrapped Bitcoin
-                      </SelectItem>
-                      <SelectItem
-                        value="USDC"
-                        className="text-white hover:bg-black"
-                      >
-                        USDC - USD Coin
-                      </SelectItem>
-                      <SelectItem
-                        value="USDT"
-                        className="text-white hover:bg-black"
-                      >
-                        USDT - Tether
-                      </SelectItem>
-                      <SelectItem
-                        value="LINK"
-                        className="text-white hover:bg-black"
-                      >
-                        LINK - Chainlink
-                      </SelectItem>
-                      <SelectItem
-                        value="UNI"
-                        className="text-white hover:bg-black"
-                      >
-                        UNI - Uniswap
                       </SelectItem>
                     </SelectContent>
                   </Select>

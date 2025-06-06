@@ -56,7 +56,7 @@ const mockTradeHistory = [
 
 export default function BoxInfoPage() {
   const params = useParams();
-  const { connectWallet, account, getBoxData } = useSimpleContract();
+  const { connectWallet, account, getBoxData, bid } = useSimpleContract();
   const [bidAmount, setBidAmount] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
@@ -167,9 +167,50 @@ export default function BoxInfoPage() {
     } else {
       fetchBoxDetails();
     }
-  }, [params?.id, isAuthenticated, account, getBoxData]);
+  }, [params?.id, isAuthenticated, account]);
 
-  // // Handler for placing bids
+  const handleBid = async () => {
+    console.log('handleBid clicked'); // ← Add this
+    if (!isAuthenticated || !bidAmount || !boxDetails) return;
+    console.log('bid params :', bidAmount, boxDetails);
+
+    // Assuming boxDetails.ownerAddress holds the owner address and account is connected wallet
+    if (isCurrentHolder) {
+      alert(
+        " 🚫 You're the initiator & current owner. You cannot place a bid."
+      );
+      setTimeout(() => setError(null), 4000);
+      return;
+    }
+
+    try {
+      setIsSubmitting(true);
+      setError(null);
+      const boxAddress = boxDetails.boxAddress || params.id;
+      console.log('intenral ', boxAddress);
+      await bid(boxAddress, bidAmount);
+
+      setShowSuccess(true);
+      setBidAmount('');
+      const updatedData = await getBoxData(boxAddress);
+      setBoxDetails(updatedData);
+    } catch (err) {
+      console.error('Bid failed:', err);
+    } finally {
+      setIsSubmitting(false);
+      setTimeout(() => setShowSuccess(false), 3000);
+    }
+  };
+
+  const handleRedeem = async () => {
+    if (!isAuthenticated) {
+      return;
+    }
+
+    setIsSubmitting(true);
+    await new Promise((resolve) => setTimeout(resolve, 2000));
+    setIsSubmitting(false);
+  };
 
   // // Debug renders
   // console.log('BoxInfoPage render:', {
@@ -191,6 +232,20 @@ export default function BoxInfoPage() {
 
   return (
     <div className="flex min-h-screen bg-gradient-to-br from-black  to-black">
+      <AnimatePresence>
+        {showSuccess && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.8, y: 30 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.8, y: 30 }}
+            transition={{ duration: 0.4, ease: 'easeInOut' }}
+            className="fixed bottom-10 right-10 z-50 bg-green-500 text-white px-6 py-4 rounded-xl shadow-lg"
+          >
+            🎉 Bid placed successfully!
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       <motion.div
         className="lg:col-span-2 space-6 m-2 w-2/3"
         initial={{ x: -50, opacity: 0 }}
@@ -303,7 +358,114 @@ export default function BoxInfoPage() {
           </Card>
         </motion.div>
 
-        <HandleBid />
+        <motion.div
+          whileHover={{ y: -5 }}
+          transition={{ type: 'spring', stiffness: 300 }}
+          className="my-4"
+        >
+          <Card className="bg-[#222222] border-[#222222] hover:border-primary transition-all duration-300">
+            <CardHeader>
+              <CardTitle className="text-white flex items-center gap-2">
+                <Zap className="h-5 w-5 text-primary" />
+                Place Bid
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {!isAuthenticated ? (
+                <motion.div
+                  className="bg-black/30 p-4 rounded-lg border border-primary/30 text-center"
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.2 }}
+                >
+                  <AlertCircle className="h-10 w-10 text-primary mx-auto mb-2" />
+                  <h3 className="text-white font-bold text-lg mb-2">
+                    Wallet Not Connected
+                  </h3>
+                  <p className="text-white/60 mb-4">
+                    Connect your wallet to place bids on this box
+                  </p>
+                </motion.div>
+              ) : (
+                <>
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium text-white">
+                      Bid Amount
+                    </label>
+                    <motion.div
+                      whileFocus={{ scale: 1.02 }}
+                      transition={{ type: 'spring', stiffness: 300 }}
+                    >
+                      <Input
+                        type="number"
+                        placeholder="Enter bid amount"
+                        value={bidAmount}
+                        onChange={(e) => setBidAmount(e.target.value)}
+                        disabled={boxDetails.isExpired}
+                        className="bg-black border-[#222222] text-white focus:border-primary"
+                      />
+                    </motion.div>
+                    <p className="text-xs text-white/60">
+                      Minimum bid: {boxDetails.lastBidPrice} + 0.01{' '}
+                      {boxDetails.tokenType}
+                    </p>
+                  </div>
+
+                  <motion.div
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    transition={{ type: 'spring', stiffness: 400 }}
+                  >
+                    <Button
+                      className="w-full bg-primary hover:bg-[#169976] text-black font-bold text-lg py-6 glow-primary-strong"
+                      size="lg"
+                      onClick={handleBid}
+                      disabled={
+                        !bidAmount || isSubmitting || boxDetails.isExpired
+                      }
+                    >
+                      <motion.span
+                        animate={isSubmitting ? { rotate: 360 } : {}}
+                        transition={{
+                          duration: 1,
+                          repeat: isSubmitting ? Number.POSITIVE_INFINITY : 0,
+                          ease: 'linear',
+                        }}
+                      >
+                        {isSubmitting ? '⚡' : '🚀'}
+                      </motion.span>
+                      <span className="ml-2">
+                        {isSubmitting ? 'Placing Bid...' : 'Bid Now!'}
+                      </span>
+                    </Button>
+                  </motion.div>
+
+                  {boxDetails.isExpired && isCurrentHolder && (
+                    <motion.div
+                      className="pt-4 border-t border-[#222222]"
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.3 }}
+                    >
+                      <p className="text-sm text-white/60 mb-3">
+                        This box has expired. As the current holder, you can
+                        redeem the tokens.
+                      </p>
+                      <Button
+                        variant="outline"
+                        className="w-full border-primary text-primary hover:bg-primary hover:text-black"
+                        onClick={handleRedeem}
+                        disabled={isSubmitting}
+                      >
+                        {isSubmitting ? 'Processing...' : 'Redeem Tokens'}
+                      </Button>
+                    </motion.div>
+                  )}
+                </>
+              )}
+            </CardContent>
+          </Card>
+        </motion.div>
       </motion.div>
 
       <motion.div

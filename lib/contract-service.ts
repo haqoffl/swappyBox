@@ -12,7 +12,7 @@ const CONTRACT_ABI = [
   'function getAllBoxes() view returns (address[])',
   'function depositToBox(uint256 _index, uint256 _deadline, uint256 _strikeInUSDC) payable',
   'function obligate(address _contract) external',
-  'function bid(address _contract) external payable',
+  'function bid(address _contract) payable',
   'function withdraw(address _contract) external',
   'function getPrice(address _contract) external view returns (uint256)',
   'function getBoxData(address _contract) external view returns (tuple(uint256 bidInitialTime, uint256 bidEndTime, uint256 totalBid, uint256 basePrice, uint256 lastPrice, address currentWinner, address poolInitiator))',
@@ -663,7 +663,12 @@ export const useSimpleContract = () => {
     setIsSubmitting(true);
     try {
       const contract = await getContract(); // Added await here
-      const tx = await contract.bid(boxAddress, {
+
+      console.log('biding wid params : ', {
+        boxAddress,
+        value: ethers.parseEther(ethValue),
+      });
+      const tx = await contract['bid(address)'](boxAddress, {
         value: ethers.parseEther(ethValue),
       });
       await tx.wait();
@@ -711,8 +716,6 @@ export const useSimpleContract = () => {
     try {
       const contract = await getContract();
       const data = await contract.getBoxData(boxAddress);
-
-      console.log('Raw data for', boxAddress, ':', data);
 
       if (
         data.basePrice.toString() === '0' &&

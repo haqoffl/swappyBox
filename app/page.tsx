@@ -101,20 +101,19 @@ function CountdownTimer({ deadline }: { deadline: Date }) {
       if (distance < 0) {
         setTimeLeft('EXPIRED');
         setIsEndingSoon(false);
+        clearInterval(timer);
       } else {
         const days = Math.floor(distance / (1000 * 60 * 60 * 24));
         const hours = Math.floor(
           (distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)
         );
         const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+        const seconds = Math.floor((distance % (1000 * 60)) / 1000);
 
-        if (distance < 24 * 60 * 60 * 1000) {
-          setIsEndingSoon(true);
-          setTimeLeft(`${hours}h ${minutes}m`);
-        } else {
-          setIsEndingSoon(false);
-          setTimeLeft(`${days}d ${hours}h`);
-        }
+        setIsEndingSoon(distance < 24 * 60 * 60 * 1000); // under 24h
+        setTimeLeft(
+          `${days > 0 ? `${days}d ` : ''}${hours}h ${minutes}m ${seconds}s`
+        );
       }
     }, 1000);
 
@@ -125,7 +124,7 @@ function CountdownTimer({ deadline }: { deadline: Date }) {
     <motion.div
       className="flex items-center gap-2"
       animate={isEndingSoon ? { scale: [1, 1.05, 1] } : {}}
-      transition={{ duration: 2, repeat: Number.POSITIVE_INFINITY }}
+      transition={{ duration: 2, repeat: Infinity }}
     >
       <Clock className="h-4 w-4 text-primary" />
       <span
@@ -135,6 +134,7 @@ function CountdownTimer({ deadline }: { deadline: Date }) {
       >
         {timeLeft}
       </span>
+
       <AnimatePresence>
         {isEndingSoon && (
           <motion.div
@@ -217,8 +217,6 @@ export default function AllBoxesPage() {
 
   return (
     <div className="min-h-screen bg-black">
-      {/* Header */}
-
       {/* Main Content */}
       <main className="container mx-auto px-4 py-8">
         <motion.div
@@ -292,7 +290,9 @@ export default function AllBoxesPage() {
                       </Badge>
                     </motion.div>
                   </div>
-                  {box.data && <CountdownTimer deadline={box.data.deadline} />}
+                  {box.data && (
+                    <CountdownTimer deadline={new Date(box.data.deadline)} />
+                  )}
                 </CardHeader>
 
                 <CardContent className="space-y-4">
