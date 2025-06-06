@@ -107,13 +107,13 @@ SwappyBox is just the beginning. Planned features include:
    - ERC20 Support
     Let initiators use any ERC20 token (e.g., USDC, DAI, WETH) as deposit, not just ETH.
 
-    - Flexible Event Emitting
+   - Flexible Event Emitting
     Improved and granular event logs for better integration with frontends, analytics, and The Graph.
 
    - Real-time Bid Sharing
     Push latest bids to a frontend in real-time via WebSocket or events → frontend bridge → notify all bidders instantly.
 
-    - Integrating Obligation & withdraw with contract which is already
+   - Integrating Obligation & withdraw with contract which is already
     implemented
 
 
