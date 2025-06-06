@@ -20,26 +20,8 @@ import Link from 'next/link';
 import Header from '@/components/header';
 import { usePrivy } from '@privy-io/react-auth';
 import { useSimpleContract } from '@/lib/contract-service';
-
-// Mock data for box details
-const mockBoxDetails = {
-  1: {
-    id: 1,
-    tokenAmount: '10 ETH',
-    tokenType: 'ETH',
-    basePrice: '2.30 ETH',
-    marketPrice: '2.45 ETH',
-    lastBidPrice: '2.40 ETH',
-    deadline: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000),
-    totalBidders: 12,
-    currentHolder: '0x742d35Cc6634C0532925a3b8D4C2C4e4C4C4C4C4',
-    creator: '0x123d35Cc6634C0532925a3b8D4C2C4e4C4C4C4C4',
-    totalTrades: 45,
-    totalVolume: '108.5 ETH',
-    avgMargin: '0.15 ETH',
-    isExpired: false,
-  },
-};
+import HandleBid from '@/components/handlebid';
+import tradingHistory from '@/components/tradingHistory';
 
 const mockTradeHistory = [
   {
@@ -72,61 +54,6 @@ const mockTradeHistory = [
   },
 ];
 
-function CountdownTimer({ deadline }: { deadline: Date }) {
-  const [timeLeft, setTimeLeft] = useState('');
-  const [isExpired, setIsExpired] = useState(false);
-
-  useEffect(() => {
-    const timer = setInterval(() => {
-      const now = new Date().getTime();
-      const distance = deadline.getTime() - now;
-
-      if (distance < 0) {
-        setTimeLeft('EXPIRED');
-        setIsExpired(true);
-      } else {
-        const days = Math.floor(distance / (1000 * 60 * 60 * 24));
-        const hours = Math.floor(
-          (distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)
-        );
-        const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
-        const seconds = Math.floor((distance % (1000 * 60)) / 1000);
-
-        setTimeLeft(`${days}d ${hours}h ${minutes}m ${seconds}s`);
-        setIsExpired(false);
-      }
-    }, 1000);
-
-    return () => clearInterval(timer);
-  }, [deadline]);
-
-  return (
-    <motion.div
-      className="flex items-center gap-2"
-      animate={!isExpired ? { scale: [1, 1.02, 1] } : {}}
-      transition={{ duration: 2, repeat: Number.POSITIVE_INFINITY }}
-    >
-      <Clock className="h-4 w-4 text-primary" />
-      <span
-        className={`font-mono text-lg font-bold ${
-          isExpired ? 'text-[#169976]' : 'text-primary'
-        }`}
-      >
-        {timeLeft}
-      </span>
-      {isExpired && (
-        <motion.div
-          initial={{ scale: 0 }}
-          animate={{ scale: 1 }}
-          transition={{ type: 'spring', stiffness: 500 }}
-        >
-          <Badge className="bg-[#169976] text-white">Expired</Badge>
-        </motion.div>
-      )}
-    </motion.div>
-  );
-}
-
 export default function BoxInfoPage() {
   const params = useParams();
   const { connectWallet, account, getBoxData } = useSimpleContract();
@@ -138,472 +65,313 @@ export default function BoxInfoPage() {
 
   const isAuthenticated = privy.user !== undefined;
 
-  const boxId = Number.parseInt(params.id as string);
-
   const [boxDetails, setBoxDetails] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    const fetchBoxDetails = async () => {
-      try {
-        const data = await getBoxData(params.id as string);
-        setBoxDetails(data);
-        console.log(data);
-      } catch (err) {
-        console.error('Failed to fetch box data:', err);
-      } finally {
-        setLoading(false);
-      }
-    };
+  // Helper function to shorten addresses
+  const shortenAddress = (address: string) => {
+    if (!address) return '';
+    return `${address.slice(0, 6)}...${address.slice(-4)}`;
+  };
 
-    fetchBoxDetails();
-  }, [params.id]);
+  // Check if current user is the holder
+  const isCurrentHolder =
+    boxDetails?.currentHolder?.toLowerCase() === address?.toLowerCase();
+
+  // Countdown Timer Component
+  const CountdownTimer = ({ deadline }: { deadline: Date }) => {
+    const [timeLeft, setTimeLeft] = useState('');
+
+    useEffect(() => {
+      const updateTimer = () => {
+        const now = new Date().getTime();
+        const distance = deadline.getTime() - now;
+
+        if (distance < 0) {
+          setTimeLeft('EXPIRED');
+          return;
+        }
+
+        const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+        const hours = Math.floor(
+          (distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)
+        );
+        const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+        const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+        if (days > 0) {
+          setTimeLeft(`${days}d ${hours}h ${minutes}m`);
+        } else if (hours > 0) {
+          setTimeLeft(`${hours}h ${minutes}m ${seconds}s`);
+        } else {
+          setTimeLeft(`${minutes}m ${seconds}s`);
+        }
+      };
+
+      updateTimer();
+      const interval = setInterval(updateTimer, 1000);
+      return () => clearInterval(interval);
+    }, [deadline]);
+
+    return (
+      <span
+        className={`font-mono text-sm ${
+          timeLeft === 'EXPIRED' ? 'text-red-400' : 'text-primary'
+        }`}
+      >
+        {timeLeft}
+      </span>
+    );
+  };
 
   useEffect(() => {
     if (isAuthenticated && !account) {
       connectWallet().catch(console.error);
     }
   }, [isAuthenticated, account, connectWallet]);
+  useEffect(() => {
+    const fetchBoxDetails = async () => {
+      if (!params?.id) {
+        setLoading(false);
+        return;
+      }
 
-  if (!boxDetails) {
-    return (
-      <div className="min-h-screen bg-black flex items-center justify-center">
-        <motion.div
-          className="text-center"
-          initial={{ opacity: 0, y: 50 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-        >
-          <h1 className="text-2xl font-bold mb-2 text-white">Box Not Found</h1>
-          <p className="text-white/60 mb-4">
-            The requested box does not exist.
-          </p>
-          <Link href="/">
-            <Button className="bg-primary hover:bg-[#169976] text-black font-bold">
-              Back to All Boxes
-            </Button>
-          </Link>
-        </motion.div>
-      </div>
-    );
+      try {
+        setLoading(true);
+        setError(null);
+
+        const data = await getBoxData(params.id as string);
+        if (data === null) {
+          setError('Box not found or not initialized');
+          setBoxDetails(null);
+        } else {
+          setBoxDetails(data);
+        }
+      } catch (err) {
+        console.error('Failed to fetch box data:', err);
+        setError('Failed to fetch box data');
+        setBoxDetails(null);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (isAuthenticated && account) {
+      fetchBoxDetails();
+    } else if (isAuthenticated && !account) {
+      const timer = setTimeout(() => {
+        fetchBoxDetails();
+      }, 1000);
+      return () => clearTimeout(timer);
+    } else {
+      fetchBoxDetails();
+    }
+  }, [params?.id, isAuthenticated, account, getBoxData]);
+
+  // // Handler for placing bids
+
+  // // Debug renders
+  // console.log('BoxInfoPage render:', {
+  //   paramsId: params?.id,
+  //   isAuthenticated,
+  //   account,
+  //   loading,
+  //   boxDetails,
+  //   error,
+  // });
+
+  if (error) {
+    return <div>Error: {error}</div>;
   }
 
-  const handleBid = async () => {
-    if (!isAuthenticated) {
-      const { error } = await privy.login();
-      if (error) {
-        console.error('Authentication failed:', error);
-        return;
-      }
-    }
-
-    setIsSubmitting(true);
-    await new Promise((resolve) => setTimeout(resolve, 2000));
-    setIsSubmitting(false);
-    setShowSuccess(true);
-    setBidAmount('');
-    setTimeout(() => setShowSuccess(false), 3000);
-  };
-
-  const handleRedeem = async () => {
-    if (!isAuthenticated) {
-      const { error } = await privy.login();
-      if (error) {
-        console.error('Authentication failed:', error);
-        return;
-      }
-    }
-
-    setIsSubmitting(true);
-    await new Promise((resolve) => setTimeout(resolve, 2000));
-    setIsSubmitting(false);
-  };
-
-  const isCurrentHolder = address && address === boxDetails.currentHolder;
+  if (!boxDetails) {
+    return <div>Box not found or not initialized</div>;
+  }
 
   return (
-    <div className="min-h-screen bg-black">
-      {/* Header */}
+    <div className="flex min-h-screen bg-gradient-to-br from-black  to-black">
+      <motion.div
+        className="lg:col-span-2 space-6 m-2 w-2/3"
+        initial={{ x: -50, opacity: 0 }}
+        animate={{ x: 0, opacity: 1 }}
+        transition={{ delay: 0.3, duration: 0.6 }}
+      >
+        {/* Box Details Card */}
+        <motion.div
+          whileHover={{ y: -5 }}
+          transition={{ type: 'spring', stiffness: 300 }}
+        >
+          <Card className="bg-[#222222] border-[#222222] hover:border-primary transition-all duration-300 glow-primary">
+            <CardHeader>
+              <CardTitle className="flex items-center justify-between text-white">
+                <motion.span
+                  animate={{ scale: [1, 1.02, 1] }}
+                  transition={{
+                    duration: 3,
+                    repeat: Number.POSITIVE_INFINITY,
+                  }}
+                >
+                  Box Details
+                </motion.span>
+                <motion.div
+                  whileHover={{ scale: 1.1, rotate: 5 }}
+                  transition={{ type: 'spring', stiffness: 400 }}
+                >
+                  <Badge className="bg-primary text-black font-bold">
+                    {boxDetails.tokenType}
+                  </Badge>
+                </motion.div>
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <motion.div
+                  whileHover={{ scale: 1.05, x: 5 }}
+                  transition={{ type: 'spring', stiffness: 300 }}
+                >
+                  <p className="text-sm text-white/60">Base Price</p>
+                  <p className="text-lg font-semibold text-white">
+                    {boxDetails.basePrice} ETH
+                  </p>
+                </motion.div>
+                <motion.div
+                  whileHover={{ scale: 1.05, x: 5 }}
+                  transition={{ type: 'spring', stiffness: 300 }}
+                >
+                  <p className="text-sm text-white/60">Market Price</p>
+                  <motion.p
+                    className="text-lg font-semibold text-primary"
+                    animate={{ scale: [1, 1.05, 1] }}
+                    transition={{
+                      duration: 2,
+                      repeat: Number.POSITIVE_INFINITY,
+                    }}
+                  >
+                    {boxDetails?.marketPrice ?? '0'} ETH
+                  </motion.p>
+                </motion.div>
+                <motion.div
+                  whileHover={{ scale: 1.05, x: 5 }}
+                  transition={{ type: 'spring', stiffness: 300 }}
+                >
+                  <p className="text-sm text-white/60">Last Bid Price</p>
+                  <p className="text-lg font-semibold text-white">
+                    {boxDetails.lastBidPrice} ETH
+                  </p>
+                </motion.div>
+                <motion.div
+                  whileHover={{ scale: 1.05, x: 5 }}
+                  transition={{ type: 'spring', stiffness: 300 }}
+                >
+                  <p className="text-sm text-white/60">Total Bidders</p>
+                  <p className="text-lg font-semibold text-white">
+                    {boxDetails.totalBidders}
+                  </p>
+                </motion.div>
+              </div>
 
-      {/* Success Animation */}
-      <AnimatePresence>
-        {showSuccess && (
-          <motion.div
-            className="fixed top-20 right-4 z-50 bg-primary text-black p-4 rounded-lg font-bold"
-            initial={{ x: 300, opacity: 0 }}
-            animate={{ x: 0, opacity: 1 }}
-            exit={{ x: 300, opacity: 0 }}
-            transition={{ type: 'spring', stiffness: 300 }}
-          >
-            🎉 Bid placed successfully!
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {/* Main Content */}
-      <main className="container mx-auto px-4 py-8">
-        <div className="grid lg:grid-cols-3 gap-8">
-          {/* Left Section - Box Details & Trading */}
-          <motion.div
-            className="lg:col-span-2 space-y-6"
-            initial={{ x: -50, opacity: 0 }}
-            animate={{ x: 0, opacity: 1 }}
-            transition={{ delay: 0.3, duration: 0.6 }}
-          >
-            {/* Box Details Card */}
-            <motion.div
-              whileHover={{ y: -5 }}
-              transition={{ type: 'spring', stiffness: 300 }}
-            >
-              <Card className="bg-[#222222] border-[#222222] hover:border-primary transition-all duration-300 glow-primary">
-                <CardHeader>
-                  <CardTitle className="flex items-center justify-between text-white">
-                    <motion.span
-                      animate={{ scale: [1, 1.02, 1] }}
-                      transition={{
-                        duration: 3,
-                        repeat: Number.POSITIVE_INFINITY,
-                      }}
-                    >
-                      Box Details
-                    </motion.span>
-                    <motion.div
-                      whileHover={{ scale: 1.1, rotate: 5 }}
-                      transition={{ type: 'spring', stiffness: 400 }}
-                    >
-                      <Badge className="bg-primary text-black font-bold">
-                        {boxDetails.tokenType}
-                      </Badge>
-                    </motion.div>
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="grid grid-cols-2 gap-4">
-                    <motion.div
-                      whileHover={{ scale: 1.05, x: 5 }}
-                      transition={{ type: 'spring', stiffness: 300 }}
-                    >
-                      <p className="text-sm text-white/60">Base Price</p>
-                      <p className="text-lg font-semibold text-white">
-                        {boxDetails.basePrice}
-                      </p>
-                    </motion.div>
-                    <motion.div
-                      whileHover={{ scale: 1.05, x: 5 }}
-                      transition={{ type: 'spring', stiffness: 300 }}
-                    >
-                      <p className="text-sm text-white/60">Market Price</p>
-                      <motion.p
-                        className="text-lg font-semibold text-primary"
-                        animate={{ scale: [1, 1.05, 1] }}
-                        transition={{
-                          duration: 2,
-                          repeat: Number.POSITIVE_INFINITY,
-                        }}
-                      >
-                        {boxDetails.marketPrice}
-                      </motion.p>
-                    </motion.div>
-                    <motion.div
-                      whileHover={{ scale: 1.05, x: 5 }}
-                      transition={{ type: 'spring', stiffness: 300 }}
-                    >
-                      <p className="text-sm text-white/60">Last Bid Price</p>
-                      <p className="text-lg font-semibold text-white">
-                        {boxDetails.lastBidPrice}
-                      </p>
-                    </motion.div>
-                    <motion.div
-                      whileHover={{ scale: 1.05, x: 5 }}
-                      transition={{ type: 'spring', stiffness: 300 }}
-                    >
-                      <p className="text-sm text-white/60">Total Bidders</p>
-                      <p className="text-lg font-semibold text-white">
-                        {boxDetails.totalBidders}
-                      </p>
-                    </motion.div>
-                  </div>
-
-                  <div className="pt-4 border-t border-[#222222]">
-                    <motion.div
-                      className="flex items-center justify-between mb-2"
-                      whileHover={{ x: 5 }}
-                      transition={{ type: 'spring', stiffness: 300 }}
-                    >
-                      <span className="text-sm text-white/60">
-                        Current Holder
-                      </span>
-                      <div className="flex items-center gap-2">
-                        <User className="h-4 w-4 text-primary" />
-                        <span className="font-mono text-sm text-white">
-                          {shortenAddress(boxDetails.currentHolder)}
-                          {isCurrentHolder && (
-                            <Badge
-                              variant="outline"
-                              className="ml-2 text-primary border-primary"
-                            >
-                              You
-                            </Badge>
-                          )}
-                        </span>
-                      </div>
-                    </motion.div>
-
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm text-white/60">
-                        Time Remaining
-                      </span>
-                      <CountdownTimer deadline={boxDetails.deadline} />
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </motion.div>
-
-            {/* Trading Card */}
-            <motion.div
-              whileHover={{ y: -5 }}
-              transition={{ type: 'spring', stiffness: 300 }}
-            >
-              <Card className="bg-[#222222] border-[#222222] hover:border-primary transition-all duration-300">
-                <CardHeader>
-                  <CardTitle className="text-white flex items-center gap-2">
-                    <Zap className="h-5 w-5 text-primary" />
-                    Place Bid
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  {!isAuthenticated ? (
-                    <motion.div
-                      className="bg-black/30 p-4 rounded-lg border border-primary/30 text-center"
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: 0.2 }}
-                    >
-                      <AlertCircle className="h-10 w-10 text-primary mx-auto mb-2" />
-                      <h3 className="text-white font-bold text-lg mb-2">
-                        Wallet Not Connected
-                      </h3>
-                      <p className="text-white/60 mb-4">
-                        Connect your wallet to place bids on this box
-                      </p>
-                    </motion.div>
-                  ) : (
-                    <>
-                      <div className="space-y-2">
-                        <label className="text-sm font-medium text-white">
-                          Bid Amount ({boxDetails.tokenType})
-                        </label>
-                        <motion.div
-                          whileFocus={{ scale: 1.02 }}
-                          transition={{ type: 'spring', stiffness: 300 }}
+              <div className="pt-4 border-t border-[#222222]">
+                <motion.div
+                  className="flex items-center justify-between mb-2"
+                  whileHover={{ x: 5 }}
+                  transition={{ type: 'spring', stiffness: 300 }}
+                >
+                  <span className="text-sm text-white/60">Current Holder</span>
+                  <div className="flex items-center gap-2">
+                    <User className="h-4 w-4 text-primary" />
+                    <span className="font-mono text-sm text-white">
+                      {shortenAddress(boxDetails.currentHolder)}
+                      {isCurrentHolder && (
+                        <Badge
+                          variant="outline"
+                          className="ml-2 text-primary border-primary"
                         >
-                          <Input
-                            type="number"
-                            placeholder="Enter bid amount"
-                            value={bidAmount}
-                            onChange={(e) => setBidAmount(e.target.value)}
-                            disabled={boxDetails.isExpired}
-                            className="bg-black border-[#222222] text-white focus:border-primary"
-                          />
-                        </motion.div>
-
-                        <p className="text-xs text-white/60">
-                          Minimum bid: {boxDetails.lastBidPrice} + 0.01{' '}
-                          {boxDetails.tokenType}
-                        </p>
-                        <p className="text-white"> address : {address} </p>
-                      </div>
-
-                      <motion.div
-                        whileHover={{ scale: 1.02 }}
-                        whileTap={{ scale: 0.98 }}
-                        transition={{ type: 'spring', stiffness: 400 }}
-                      >
-                        <Button
-                          className="w-full bg-primary hover:bg-[#169976] text-black font-bold text-lg py-6 glow-primary-strong"
-                          size="lg"
-                          onClick={handleBid}
-                          disabled={
-                            !bidAmount || isSubmitting || boxDetails.isExpired
-                          }
-                        >
-                          <motion.span
-                            animate={isSubmitting ? { rotate: 360 } : {}}
-                            transition={{
-                              duration: 1,
-                              repeat: isSubmitting
-                                ? Number.POSITIVE_INFINITY
-                                : 0,
-                              ease: 'linear',
-                            }}
-                          >
-                            {isSubmitting ? '⚡' : '🚀'}
-                          </motion.span>
-                          <span className="ml-2">
-                            {isSubmitting ? 'Placing Bid...' : 'Bid Now!'}
-                          </span>
-                        </Button>
-                      </motion.div>
-
-                      {boxDetails.isExpired && isCurrentHolder && (
-                        <motion.div
-                          className="pt-4 border-t border-[#222222]"
-                          initial={{ opacity: 0, y: 20 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          transition={{ delay: 0.3 }}
-                        >
-                          <p className="text-sm text-white/60 mb-3">
-                            This box has expired. As the current holder, you can
-                            redeem the tokens.
-                          </p>
-                          <Button
-                            variant="outline"
-                            className="w-full border-primary text-primary hover:bg-primary hover:text-black"
-                            onClick={handleRedeem}
-                            disabled={isSubmitting}
-                          >
-                            {isSubmitting ? 'Processing...' : 'Redeem Tokens'}
-                          </Button>
-                        </motion.div>
+                          You
+                        </Badge>
                       )}
-                    </>
-                  )}
-                </CardContent>
-              </Card>
-            </motion.div>
-          </motion.div>
-
-          {/* Right Section - Trade History */}
-          <motion.div
-            className="space-y-6"
-            initial={{ x: 50, opacity: 0 }}
-            animate={{ x: 0, opacity: 1 }}
-            transition={{ delay: 0.4, duration: 0.6 }}
-          >
-            {/* Stats Card */}
-            <motion.div
-              whileHover={{ y: -5 }}
-              transition={{ type: 'spring', stiffness: 300 }}
-            >
-              <Card className="bg-[#222222] border-[#222222] hover:border-primary transition-all duration-300">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2 text-white">
-                    <Activity className="h-5 w-5 text-primary" />
-                    Trading Stats
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-3">
-                  <motion.div
-                    className="flex justify-between"
-                    whileHover={{ x: 5 }}
-                    transition={{ type: 'spring', stiffness: 300 }}
-                  >
-                    <span className="text-sm text-white/60">Total Trades</span>
-                    <motion.span
-                      className="font-semibold text-white"
-                      animate={{ scale: [1, 1.05, 1] }}
-                      transition={{
-                        duration: 3,
-                        repeat: Number.POSITIVE_INFINITY,
-                      }}
-                    >
-                      {boxDetails.totalTrades}
-                    </motion.span>
-                  </motion.div>
-                  <motion.div
-                    className="flex justify-between"
-                    whileHover={{ x: 5 }}
-                    transition={{ type: 'spring', stiffness: 300 }}
-                  >
-                    <span className="text-sm text-white/60">Total Volume</span>
-                    <span className="font-semibold text-primary">
-                      {boxDetails.totalVolume}
                     </span>
-                  </motion.div>
-                  <motion.div
-                    className="flex justify-between"
-                    whileHover={{ x: 5 }}
-                    transition={{ type: 'spring', stiffness: 300 }}
-                  >
-                    <span className="text-sm text-white/60">Avg Margin</span>
-                    <motion.span
-                      className="font-semibold text-primary"
-                      animate={{ scale: [1, 1.1, 1] }}
-                      transition={{
-                        duration: 2,
-                        repeat: Number.POSITIVE_INFINITY,
+                  </div>
+                </motion.div>
+
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-white/60">Time Remaining</span>
+                  <CountdownTimer deadline={boxDetails.deadline} />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </motion.div>
+
+        <HandleBid />
+      </motion.div>
+
+      <motion.div
+        className="space-6 w-1/3 m-2"
+        initial={{ x: 50, opacity: 0 }}
+        animate={{ x: 0, opacity: 1 }}
+        transition={{ delay: 0.4, duration: 0.6 }}
+      >
+        {/* Trade History Card */}
+        <motion.div
+          whileHover={{ y: -5 }}
+          transition={{ type: 'spring', stiffness: 300 }}
+        >
+          <Card className="bg-[#222222] border-[#222222] hover:border-primary transition-all duration-300">
+            <CardHeader>
+              <CardTitle className="text-white">Recent Activity</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <Table>
+                <TableHeader>
+                  <TableRow className="border-[#222222]">
+                    <TableHead className="text-white/60">Trader</TableHead>
+                    <TableHead className="text-white/60">Bid</TableHead>
+                    <TableHead className="text-white/60">Profit</TableHead>
+                    <TableHead className="text-white/60">Time</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {mockTradeHistory.map((trade, index) => (
+                    <motion.tr
+                      key={trade.id}
+                      className="border-[#222222] hover:bg-black/50"
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: 0.6 + index * 0.1 }}
+                      whileHover={{
+                        x: 5,
+                        backgroundColor: 'rgba(29, 205, 159, 0.1)',
                       }}
                     >
-                      {boxDetails.avgMargin}
-                    </motion.span>
-                  </motion.div>
-                </CardContent>
-              </Card>
-            </motion.div>
-
-            {/* Trade History Card */}
-            <motion.div
-              whileHover={{ y: -5 }}
-              transition={{ type: 'spring', stiffness: 300 }}
-            >
-              <Card className="bg-[#222222] border-[#222222] hover:border-primary transition-all duration-300">
-                <CardHeader>
-                  <CardTitle className="text-white">Recent Activity</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <Table>
-                    <TableHeader>
-                      <TableRow className="border-[#222222]">
-                        <TableHead className="text-white/60">Trader</TableHead>
-                        <TableHead className="text-white/60">Bid</TableHead>
-                        <TableHead className="text-white/60">Profit</TableHead>
-                        <TableHead className="text-white/60">Time</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {mockTradeHistory.map((trade, index) => (
-                        <motion.tr
-                          key={trade.id}
-                          className="border-[#222222] hover:bg-black/50"
-                          initial={{ opacity: 0, x: -20 }}
-                          animate={{ opacity: 1, x: 0 }}
-                          transition={{ delay: 0.6 + index * 0.1 }}
-                          whileHover={{
-                            x: 5,
-                            backgroundColor: 'rgba(29, 205, 159, 0.1)',
-                          }}
-                        >
-                          <TableCell className="font-mono text-xs text-white">
-                            {shortenAddress(trade.trader)}
-                            {address === trade.trader && (
-                              <Badge
-                                variant="outline"
-                                className="ml-2 text-xs text-primary border-primary"
-                              >
-                                You
-                              </Badge>
-                            )}
-                          </TableCell>
-                          <TableCell className="font-semibold text-white">
-                            {trade.bidAmount}
-                          </TableCell>
-                          <TableCell className="text-primary font-medium">
-                            +{trade.marginProfit}
-                          </TableCell>
-                          <TableCell className="text-xs text-white/60">
-                            {trade.timestamp.toLocaleTimeString()}
-                          </TableCell>
-                        </motion.tr>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </CardContent>
-              </Card>
-            </motion.div>
-          </motion.div>
-        </div>
-      </main>
+                      <TableCell className="font-mono text-xs text-white">
+                        {shortenAddress(trade.trader)}
+                        {address === trade.trader && (
+                          <Badge
+                            variant="outline"
+                            className="ml-2 text-xs text-primary border-primary"
+                          >
+                            You
+                          </Badge>
+                        )}
+                      </TableCell>
+                      <TableCell className="font-semibold text-white">
+                        {trade.bidAmount}
+                      </TableCell>
+                      <TableCell className="text-primary font-medium">
+                        +{trade.marginProfit}
+                      </TableCell>
+                      <TableCell className="text-xs text-white/60">
+                        {trade.timestamp.toLocaleTimeString()}
+                      </TableCell>
+                    </motion.tr>
+                  ))}
+                </TableBody>
+              </Table>
+            </CardContent>
+          </Card>
+        </motion.div>
+      </motion.div>
     </div>
   );
 }
