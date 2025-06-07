@@ -120,6 +120,10 @@ SwappyBox is just the beginning. Planned features include:
 
 ## 🧪 Try It Out
 
+https://swappy-box.vercel.app/
+
+### use asset hub pasio(passet hub)since, contract has been deployed on that network 
+
 ---
 
 
