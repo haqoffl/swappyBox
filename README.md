@@ -86,7 +86,7 @@ Traditional options are rigid, slightly centralized, and not fun to use. SwappyB
 
 SwappyBox is already feature-rich with the following components implemented:
 
-   - ETH-based SwappyBox creation with strike price and expiry.
+   - WND-based SwappyBox creation with strike price and expiry.
 
    - Dynamic box bidding — only higher bids accepted.
 
