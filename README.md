@@ -124,9 +124,9 @@ https://swappy-box.vercel.app/
 
 ### use asset hub pasio(passet hub)since, contract has been deployed on that network 
 
-   SwappyBox Main Contract  : 0xb81Da2c698a079d31b616820cF9A3BEFf27aF232
-   Box factory Contract : 0xF2443f625fDC897371d04719A49170c5F4F729dF
-   USDC (ERC20) Contract : 0xF2443f625fDC897371d04719A49170c5F4F729dF
+   SwappyBox Main Contract  : 0xb81Da2c698a079d31b616820cF9A3BEFf27aF232 <br/>
+   Box factory Contract : 0xF2443f625fDC897371d04719A49170c5F4F729dF <br/>
+   USDC (ERC20) Contract : 0xF2443f625fDC897371d04719A49170c5F4F729dF <br/>
 
 
 ##  Disclaimer
