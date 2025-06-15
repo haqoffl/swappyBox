@@ -69,14 +69,14 @@ interface BoxDetails {
   isExpired: boolean;
 }
 
-interface CoreInfoPageProps {
-  boxDetails: BoxDetails;
-  address: string; // current user wallet address
-  isAuthenticated: boolean;
-  mockTradeHistory: TradeHistoryItem[];
-  onBid: (amount: number) => Promise<void>;
-  onRedeem: () => Promise<void>;
-}
+// interface CoreInfoPageProps {
+//   boxDetails: BoxDetails;
+//   address: string; // current user wallet address
+//   isAuthenticated: boolean;
+//   mockTradeHistory: TradeHistoryItem[];
+//   onBid: (amount: number) => Promise<void>;
+//   onRedeem: () => Promise<void>;
+// }
 
 function CountdownTimer({ deadline }: { deadline: Date }) {
   const [timeLeft, setTimeLeft] = useState("");
@@ -142,7 +142,7 @@ function CountdownTimer({ deadline }: { deadline: Date }) {
   );
 }
 
-export default function CoreInfoPage({}: CoreInfoPageProps) {
+export default function CoreInfoPage() {
   const params = useParams();
 
   const [bidAmount, setBidAmount] = useState("");
@@ -257,16 +257,16 @@ export default function CoreInfoPage({}: CoreInfoPageProps) {
     }
   };
 
-  async function handleRedeem() {
-    if (isSubmitting) return;
-    setIsSubmitting(true);
-    try {
-      await onRedeem();
-    } catch (e) {
-      console.error("Redeem failed", e);
-    }
-    setIsSubmitting(false);
-  }
+  //   async function handleRedeem() {
+  //     if (isSubmitting) return;
+  //     setIsSubmitting(true);
+  //     try {
+  //       await onRedeem();
+  //     } catch (e) {
+  //       console.error("Redeem failed", e);
+  //     }
+  //     setIsSubmitting(false);
+  //   }
 
   if (loading) {
     return <div className="text-white">Loading...</div>;
@@ -514,7 +514,6 @@ export default function CoreInfoPage({}: CoreInfoPageProps) {
                     <Button
                       variant="outline"
                       className="w-full border-primary text-primary hover:bg-primary hover:text-black"
-                      onClick={handleRedeem}
                       disabled={isSubmitting}
                     >
                       {isSubmitting ? "Processing..." : "Redeem Tokens"}

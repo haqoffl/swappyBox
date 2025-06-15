@@ -173,7 +173,7 @@ export default function AllBoxesPage() {
                 lastBidPrice: data.lastPrice ?? "0.0",
                 totalBidders: data.totalBids ?? 0,
                 deadline: new Date(data.bidEndTime), // adjust as needed
-                ...data, // keep any extra props if needed
+                // keep any extra props if needed
               },
               priceChange: Math.random() > 0.5 ? 3.2 : -1.4, // 🔁 Replace with actual logic
             };
