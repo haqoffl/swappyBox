@@ -63,6 +63,25 @@
 			{
 				"inputs": [
 					{
+						"internalType": "uint256",
+						"name": "",
+						"type": "uint256"
+					}
+				],
+				"name": "allBoxes",
+				"outputs": [
+					{
+						"internalType": "address",
+						"name": "",
+						"type": "address"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
 						"internalType": "address",
 						"name": "_contract",
 						"type": "address"
@@ -192,6 +211,47 @@
 			{
 				"inputs": [
 					{
+						"internalType": "uint256",
+						"name": "_index",
+						"type": "uint256"
+					},
+					{
+						"internalType": "uint256",
+						"name": "_deadline",
+						"type": "uint256"
+					},
+					{
+						"internalType": "uint256",
+						"name": "_amount",
+						"type": "uint256"
+					},
+					{
+						"internalType": "address",
+						"name": "_token",
+						"type": "address"
+					}
+				],
+				"name": "erc20DepositToBox",
+				"outputs": [],
+				"stateMutability": "nonpayable",
+				"type": "function"
+			},
+			{
+				"inputs": [],
+				"name": "getAllBoxes",
+				"outputs": [
+					{
+						"internalType": "address[]",
+						"name": "",
+						"type": "address[]"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
 						"internalType": "address",
 						"name": "_contractAdd",
 						"type": "address"
@@ -297,6 +357,24 @@
 				"type": "function"
 			},
 			{
+				"inputs": [
+					{
+						"internalType": "address",
+						"name": "_contract",
+						"type": "address"
+					},
+					{
+						"internalType": "address",
+						"name": "token",
+						"type": "address"
+					}
+				],
+				"name": "obligateERC20",
+				"outputs": [],
+				"stateMutability": "payable",
+				"type": "function"
+			},
+			{
 				"inputs": [],
 				"name": "tokenForObligation",
 				"outputs": [
@@ -318,6 +396,19 @@
 					}
 				],
 				"name": "withdraw",
+				"outputs": [],
+				"stateMutability": "nonpayable",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "address",
+						"name": "_contract",
+						"type": "address"
+					}
+				],
+				"name": "withdrawERC20",
 				"outputs": [],
 				"stateMutability": "nonpayable",
 				"type": "function"
@@ -361,11 +452,11 @@
 	},
 	"sources": {
 		"contracts/SwappyBox/Box.sol": {
-			"keccak256": "0xd78127ce3f5d613859dcc611c5ca0e28291cc3e5a879986cc70e6e622470ed0f",
+			"keccak256": "0x2fbc762de501024c8d16be439d63ab99f6d198dcca9bc99bf5883fd0f9f00f7e",
 			"license": "GPL-3.0",
 			"urls": [
-				"bzz-raw://32b8edcf7382425d6fd920d4a42db7ae6cce10f12b19c301f837a55f78921f17",
-				"dweb:/ipfs/QmSdczHh6dfvdg7UKHWAHzXeUfpMn5gTpRWK2wdQaLTZ5D"
+				"bzz-raw://fb7ebc0ba35e2f02d94d44a6aea9bb6aa991526ab829977d820346384894d68b",
+				"dweb:/ipfs/QmeKUYey2SoW7CyniPN4VVFMtAZDuJkrh1AXorqHVXU2Ae"
 			]
 		},
 		"contracts/SwappyBox/IERC20.sol": {
@@ -377,11 +468,11 @@
 			]
 		},
 		"contracts/SwappyBox/SwappBox.sol": {
-			"keccak256": "0x8b80fd6c615d11f93253a93609f6c35e18ee1a894d1c4185390bb547f4b8a16a",
+			"keccak256": "0xa01157c3f4620a8666b0e4b297847fbfcc01272d4830123ed4d0412898a0b300",
 			"license": "GPL-3.0",
 			"urls": [
-				"bzz-raw://af1d5ed0ce520f205f13faf8bb2352824008810d14eeffdf5701cdd62c7e7867",
-				"dweb:/ipfs/Qmd19TKXVcQmZrMdRA3WLdP6g4VoZVppDFbeLUNzSzJawK"
+				"bzz-raw://f2e559e2d7279ef2710f47ab54ed6cbe4d7a1b7356ecfe8471142ec910e9bce0",
+				"dweb:/ipfs/QmXBSpTTM8mVecsm6SvoNQRqxZLFhE8CsN8N2ffwpwy72H"
 			]
 		}
 	},
