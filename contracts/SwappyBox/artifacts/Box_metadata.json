@@ -82,6 +82,19 @@
 			},
 			{
 				"inputs": [],
+				"name": "getStrikePriceToPay",
+				"outputs": [
+					{
+						"internalType": "uint256",
+						"name": "",
+						"type": "uint256"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [],
 				"name": "initialTime",
 				"outputs": [
 					{
@@ -206,11 +219,11 @@
 	},
 	"sources": {
 		"contracts/SwappyBox/Box.sol": {
-			"keccak256": "0x3487863cd00bc7665ade988bfa46bdc4610b51357552a3428732ead1af00fabf",
+			"keccak256": "0xd78127ce3f5d613859dcc611c5ca0e28291cc3e5a879986cc70e6e622470ed0f",
 			"license": "GPL-3.0",
 			"urls": [
-				"bzz-raw://090e3d02ba4ca8523d6d0d9956995270316d1b6b6b15c0ea02356a2044ade61b",
-				"dweb:/ipfs/QmS8mwvnzYM9HkvD5j9u7J861armAX3tQGtxd2XM3EJZ42"
+				"bzz-raw://32b8edcf7382425d6fd920d4a42db7ae6cce10f12b19c301f837a55f78921f17",
+				"dweb:/ipfs/QmSdczHh6dfvdg7UKHWAHzXeUfpMn5gTpRWK2wdQaLTZ5D"
 			]
 		}
 	},

@@ -1,0 +1,339 @@
+{
+	"compiler": {
+		"version": "0.8.28+commit.7893614a"
+	},
+	"language": "Solidity",
+	"output": {
+		"abi": [
+			{
+				"inputs": [
+					{
+						"internalType": "address",
+						"name": "_market",
+						"type": "address"
+					}
+				],
+				"stateMutability": "nonpayable",
+				"type": "constructor"
+			},
+			{
+				"anonymous": false,
+				"inputs": [
+					{
+						"indexed": true,
+						"internalType": "address",
+						"name": "bidder",
+						"type": "address"
+					},
+					{
+						"indexed": false,
+						"internalType": "uint256",
+						"name": "time",
+						"type": "uint256"
+					},
+					{
+						"indexed": false,
+						"internalType": "uint256",
+						"name": "amount",
+						"type": "uint256"
+					},
+					{
+						"indexed": false,
+						"internalType": "string",
+						"name": "poolName",
+						"type": "string"
+					}
+				],
+				"name": "BidPlaced",
+				"type": "event"
+			},
+			{
+				"anonymous": false,
+				"inputs": [
+					{
+						"indexed": false,
+						"internalType": "address",
+						"name": "bidder",
+						"type": "address"
+					},
+					{
+						"indexed": false,
+						"internalType": "uint256",
+						"name": "BidPrice",
+						"type": "uint256"
+					}
+				],
+				"name": "BidPrice",
+				"type": "event"
+			},
+			{
+				"anonymous": false,
+				"inputs": [
+					{
+						"indexed": true,
+						"internalType": "address",
+						"name": "boxAdd",
+						"type": "address"
+					},
+					{
+						"indexed": true,
+						"internalType": "address",
+						"name": "initiator",
+						"type": "address"
+					},
+					{
+						"indexed": false,
+						"internalType": "uint256",
+						"name": "index",
+						"type": "uint256"
+					}
+				],
+				"name": "BoxEvent",
+				"type": "event"
+			},
+			{
+				"anonymous": false,
+				"inputs": [
+					{
+						"indexed": false,
+						"internalType": "uint256",
+						"name": "coreId",
+						"type": "uint256"
+					},
+					{
+						"indexed": false,
+						"internalType": "address",
+						"name": "from",
+						"type": "address"
+					},
+					{
+						"indexed": false,
+						"internalType": "address",
+						"name": "to",
+						"type": "address"
+					}
+				],
+				"name": "Transferred",
+				"type": "event"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "uint256",
+						"name": "_coreId",
+						"type": "uint256"
+					}
+				],
+				"name": "bid",
+				"outputs": [],
+				"stateMutability": "payable",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "uint256",
+						"name": "regionId",
+						"type": "uint256"
+					},
+					{
+						"internalType": "uint256",
+						"name": "bidEndTime",
+						"type": "uint256"
+					},
+					{
+						"internalType": "uint256",
+						"name": "basePricePercentage",
+						"type": "uint256"
+					}
+				],
+				"name": "createSecondaryMarket",
+				"outputs": [],
+				"stateMutability": "nonpayable",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "uint256",
+						"name": "coreId",
+						"type": "uint256"
+					}
+				],
+				"name": "getPrice",
+				"outputs": [
+					{
+						"internalType": "uint256",
+						"name": "",
+						"type": "uint256"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "uint256",
+						"name": "",
+						"type": "uint256"
+					}
+				],
+				"name": "isObligated",
+				"outputs": [
+					{
+						"internalType": "bool",
+						"name": "",
+						"type": "bool"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [],
+				"name": "market",
+				"outputs": [
+					{
+						"internalType": "address",
+						"name": "",
+						"type": "address"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "uint256",
+						"name": "coreId",
+						"type": "uint256"
+					}
+				],
+				"name": "obligate",
+				"outputs": [],
+				"stateMutability": "nonpayable",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "uint256",
+						"name": "",
+						"type": "uint256"
+					}
+				],
+				"name": "secondaryData",
+				"outputs": [
+					{
+						"internalType": "uint256",
+						"name": "bidInitialTime",
+						"type": "uint256"
+					},
+					{
+						"internalType": "uint256",
+						"name": "bidEndTime",
+						"type": "uint256"
+					},
+					{
+						"internalType": "uint256",
+						"name": "totalBid",
+						"type": "uint256"
+					},
+					{
+						"internalType": "uint256",
+						"name": "basePrice",
+						"type": "uint256"
+					},
+					{
+						"internalType": "uint256",
+						"name": "lastPrice",
+						"type": "uint256"
+					},
+					{
+						"internalType": "address",
+						"name": "currentWinner",
+						"type": "address"
+					},
+					{
+						"internalType": "address",
+						"name": "poolInitiator",
+						"type": "address"
+					},
+					{
+						"internalType": "uint256",
+						"name": "coreStartTime",
+						"type": "uint256"
+					},
+					{
+						"internalType": "uint256",
+						"name": "coreEndTime",
+						"type": "uint256"
+					},
+					{
+						"internalType": "bool",
+						"name": "isObligated",
+						"type": "bool"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			}
+		],
+		"devdoc": {
+			"kind": "dev",
+			"methods": {},
+			"version": 1
+		},
+		"userdoc": {
+			"kind": "user",
+			"methods": {},
+			"version": 1
+		}
+	},
+	"settings": {
+		"compilationTarget": {
+			"contracts/SwappyCore/SwappyCore.sol": "SwappyCore"
+		},
+		"evmVersion": "cancun",
+		"libraries": {},
+		"metadata": {
+			"bytecodeHash": "ipfs"
+		},
+		"optimizer": {
+			"details": {
+				"constantOptimizer": false,
+				"cse": false,
+				"deduplicate": false,
+				"inliner": false,
+				"jumpdestRemover": false,
+				"orderLiterals": false,
+				"peephole": false,
+				"simpleCounterForLoopUncheckedIncrement": true,
+				"yul": false
+			},
+			"runs": 200
+		},
+		"remappings": []
+	},
+	"sources": {
+		"contracts/SwappyCore/ICore.sol": {
+			"keccak256": "0x1f81e4817b97496b062c45e1ed95ff47037f23053084ac12bfb17cf9cc516db0",
+			"license": "MIT",
+			"urls": [
+				"bzz-raw://566611a43c9db7c2991f455d45104f4392a817e8bf43b1a8b2d2eb9c7fa39baf",
+				"dweb:/ipfs/Qme4oaUrcd2NJ5jr2Lj1RsCg4XFxYdvw8f4pZxwaXukWUo"
+			]
+		},
+		"contracts/SwappyCore/SwappyCore.sol": {
+			"keccak256": "0xf4f8a3087396fd3f1d704caf007d6285637206f49e63112f9b12d2b0ea8df061",
+			"license": "GPL-3.0",
+			"urls": [
+				"bzz-raw://5190b66a2735f835138a4e383ebfd48245af3e3330f88eceefee3025a1263198",
+				"dweb:/ipfs/QmciePCTBC2NGncywQ9sZWs1Q4sQrXAjWHEqtds94NFtpj"
+			]
+		}
+	},
+	"version": 1
+}
