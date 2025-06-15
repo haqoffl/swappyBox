@@ -1,527 +1,527 @@
-'use client';
+"use client";
 
-import { useEffect, useState } from 'react';
-import { ethers } from 'ethers';
-import { useWallets } from '@privy-io/react-auth';
-import type { EventLog } from 'ethers';
+import { useEffect, useState } from "react";
+import { ethers } from "ethers";
+import { useWallets } from "@privy-io/react-auth";
+import type { EventLog } from "ethers";
 
 const CONTRACT_ADDRESS = process.env.NEXT_PUBLIC_CONTRACT_ADDRESS!;
 
 const CONTRACT_ABI = [
-  'function createYourBox() external',
-  'function getAllBoxes() view returns (address[])',
-  'function depositToBox(uint256 _index, uint256 _deadline, uint256 _strikeInUSDC) payable',
-  'function obligate(address _contract) external',
-  'function bid(address _contract) payable',
-  'function withdraw(address _contract) external',
-  'function getPrice(address _contract) external view returns (uint256)',
-  'function getBoxData(address _contract) external view returns (tuple(uint256 bidInitialTime, uint256 bidEndTime, uint256 totalBid, uint256 basePrice, uint256 lastPrice, address currentWinner, address poolInitiator))',
-  'function getBalance(address _contractAdd) external view returns (uint256)',
+  "function createYourBox() external",
+  "function getAllBoxes() view returns (address[])",
+  "function depositToBox(uint256 _index, uint256 _deadline, uint256 _strikeInUSDC) payable",
+  "function obligate(address _contract) external",
+  "function bid(address _contract) payable",
+  "function withdraw(address _contract) external",
+  "function getPrice(address _contract) external view returns (uint256)",
+  "function getBoxData(address _contract) external view returns (tuple(uint256 bidInitialTime, uint256 bidEndTime, uint256 totalBid, uint256 basePrice, uint256 lastPrice, address currentWinner, address poolInitiator))",
+  "function getBalance(address _contractAdd) external view returns (uint256)",
 
-  'event BoxEvent(address indexed boxAdd, address indexed initiator, uint256 index)',
-  'event BidPrice(address bidder, uint256 BidPrice)',
+  "event BoxEvent(address indexed boxAdd, address indexed initiator, uint256 index)",
+  "event BidPrice(address bidder, uint256 BidPrice)",
 
-  'function boxes(address) view returns (address[])',
-  'function boxData(address) view returns (tuple(uint256 bidInitialTime, uint256 bidEndTime, uint256 totalBid, uint256 basePrice, uint256 lastPrice, address currentWinner, address poolInitiator))',
-  'function tokenForObligation() view returns (address)',
+  "function boxes(address) view returns (address[])",
+  "function boxData(address) view returns (tuple(uint256 bidInitialTime, uint256 bidEndTime, uint256 totalBid, uint256 basePrice, uint256 lastPrice, address currentWinner, address poolInitiator))",
+  "function tokenForObligation() view returns (address)",
 
   {
     inputs: [
       {
-        internalType: 'address',
-        name: '_contract',
-        type: 'address',
+        internalType: "address",
+        name: "_contract",
+        type: "address",
       },
       {
-        internalType: 'uint256',
-        name: 'bidAmount',
-        type: 'uint256',
+        internalType: "uint256",
+        name: "bidAmount",
+        type: "uint256",
       },
     ],
-    name: 'bid',
+    name: "bid",
     outputs: [],
-    stateMutability: 'payable',
-    type: 'function',
+    stateMutability: "payable",
+    type: "function",
   },
   {
     inputs: [],
-    name: 'box',
+    name: "box",
     outputs: [
       {
-        internalType: 'contract Box',
-        name: '',
-        type: 'address',
+        internalType: "contract Box",
+        name: "",
+        type: "address",
       },
     ],
-    stateMutability: 'view',
-    type: 'function',
+    stateMutability: "view",
+    type: "function",
   },
   {
     inputs: [
       {
-        internalType: 'address',
-        name: '',
-        type: 'address',
+        internalType: "address",
+        name: "",
+        type: "address",
       },
     ],
-    name: 'boxData',
+    name: "boxData",
     outputs: [
       {
-        internalType: 'uint256',
-        name: 'bidInitialTime',
-        type: 'uint256',
+        internalType: "uint256",
+        name: "bidInitialTime",
+        type: "uint256",
       },
       {
-        internalType: 'uint256',
-        name: 'bidEndTime',
-        type: 'uint256',
+        internalType: "uint256",
+        name: "bidEndTime",
+        type: "uint256",
       },
       {
-        internalType: 'uint256',
-        name: 'totalBid',
-        type: 'uint256',
+        internalType: "uint256",
+        name: "totalBid",
+        type: "uint256",
       },
       {
-        internalType: 'uint256',
-        name: 'basePrice',
-        type: 'uint256',
+        internalType: "uint256",
+        name: "basePrice",
+        type: "uint256",
       },
       {
-        internalType: 'uint256',
-        name: 'lastPrice',
-        type: 'uint256',
+        internalType: "uint256",
+        name: "lastPrice",
+        type: "uint256",
       },
       {
-        internalType: 'address',
-        name: 'currentWinner',
-        type: 'address',
+        internalType: "address",
+        name: "currentWinner",
+        type: "address",
       },
       {
-        internalType: 'address',
-        name: 'poolInitiator',
-        type: 'address',
+        internalType: "address",
+        name: "poolInitiator",
+        type: "address",
       },
     ],
-    stateMutability: 'view',
-    type: 'function',
+    stateMutability: "view",
+    type: "function",
   },
   {
     inputs: [
       {
-        internalType: 'address',
-        name: '',
-        type: 'address',
+        internalType: "address",
+        name: "",
+        type: "address",
       },
       {
-        internalType: 'uint256',
-        name: '',
-        type: 'uint256',
+        internalType: "uint256",
+        name: "",
+        type: "uint256",
       },
     ],
-    name: 'boxes',
+    name: "boxes",
     outputs: [
       {
-        internalType: 'address',
-        name: '',
-        type: 'address',
+        internalType: "address",
+        name: "",
+        type: "address",
       },
     ],
-    stateMutability: 'view',
-    type: 'function',
+    stateMutability: "view",
+    type: "function",
   },
   {
     inputs: [],
-    name: 'createYourBox',
+    name: "createYourBox",
     outputs: [],
-    stateMutability: 'nonpayable',
-    type: 'function',
+    stateMutability: "nonpayable",
+    type: "function",
   },
   {
     inputs: [
       {
-        internalType: 'uint256',
-        name: '_index',
-        type: 'uint256',
+        internalType: "uint256",
+        name: "_index",
+        type: "uint256",
       },
       {
-        internalType: 'uint256',
-        name: '_deadline',
-        type: 'uint256',
+        internalType: "uint256",
+        name: "_deadline",
+        type: "uint256",
       },
     ],
-    name: 'depositToBox',
+    name: "depositToBox",
     outputs: [],
-    stateMutability: 'payable',
-    type: 'function',
+    stateMutability: "payable",
+    type: "function",
   },
   {
     inputs: [
       {
-        internalType: 'address',
-        name: '_contract',
-        type: 'address',
+        internalType: "address",
+        name: "_contract",
+        type: "address",
       },
     ],
-    name: 'getBalance',
+    name: "getBalance",
     outputs: [
       {
-        internalType: 'uint256',
-        name: '',
-        type: 'uint256',
+        internalType: "uint256",
+        name: "",
+        type: "uint256",
       },
     ],
-    stateMutability: 'view',
-    type: 'function',
+    stateMutability: "view",
+    type: "function",
   },
   {
     inputs: [
       {
-        internalType: 'address',
-        name: '_contract',
-        type: 'address',
+        internalType: "address",
+        name: "_contract",
+        type: "address",
       },
     ],
-    name: 'getBoxData',
+    name: "getBoxData",
     outputs: [
       {
         components: [
           {
-            internalType: 'uint256',
-            name: 'bidInitialTime',
-            type: 'uint256',
+            internalType: "uint256",
+            name: "bidInitialTime",
+            type: "uint256",
           },
           {
-            internalType: 'uint256',
-            name: 'bidEndTime',
-            type: 'uint256',
+            internalType: "uint256",
+            name: "bidEndTime",
+            type: "uint256",
           },
           {
-            internalType: 'uint256',
-            name: 'totalBid',
-            type: 'uint256',
+            internalType: "uint256",
+            name: "totalBid",
+            type: "uint256",
           },
           {
-            internalType: 'uint256',
-            name: 'basePrice',
-            type: 'uint256',
+            internalType: "uint256",
+            name: "basePrice",
+            type: "uint256",
           },
           {
-            internalType: 'uint256',
-            name: 'lastPrice',
-            type: 'uint256',
+            internalType: "uint256",
+            name: "lastPrice",
+            type: "uint256",
           },
           {
-            internalType: 'address',
-            name: 'currentWinner',
-            type: 'address',
+            internalType: "address",
+            name: "currentWinner",
+            type: "address",
           },
           {
-            internalType: 'address',
-            name: 'poolInitiator',
-            type: 'address',
+            internalType: "address",
+            name: "poolInitiator",
+            type: "address",
           },
         ],
-        internalType: 'struct SwappyBox.BidTrack',
-        name: '',
-        type: 'tuple',
+        internalType: "struct SwappyBox.BidTrack",
+        name: "",
+        type: "tuple",
       },
     ],
-    stateMutability: 'view',
-    type: 'function',
+    stateMutability: "view",
+    type: "function",
   },
   {
     inputs: [
       {
-        internalType: 'address',
-        name: '_contract',
-        type: 'address',
+        internalType: "address",
+        name: "_contract",
+        type: "address",
       },
     ],
-    name: 'getPrice',
+    name: "getPrice",
     outputs: [
       {
-        internalType: 'uint256',
-        name: '',
-        type: 'uint256',
+        internalType: "uint256",
+        name: "",
+        type: "uint256",
       },
     ],
-    stateMutability: 'view',
-    type: 'function',
+    stateMutability: "view",
+    type: "function",
   },
   {
     inputs: [
       {
-        internalType: 'address',
-        name: '_contract',
-        type: 'address',
+        internalType: "address",
+        name: "_contract",
+        type: "address",
       },
     ],
-    name: 'obligate',
+    name: "obligate",
     outputs: [],
-    stateMutability: 'payable',
-    type: 'function',
+    stateMutability: "payable",
+    type: "function",
   },
   {
     inputs: [
       {
-        internalType: 'address',
-        name: '_contract',
-        type: 'address',
+        internalType: "address",
+        name: "_contract",
+        type: "address",
       },
     ],
-    name: 'withdraw',
+    name: "withdraw",
     outputs: [],
-    stateMutability: 'nonpayable',
-    type: 'function',
+    stateMutability: "nonpayable",
+    type: "function",
   },
   {
     inputs: [
       {
-        internalType: 'address',
-        name: '_contract',
-        type: 'address',
+        internalType: "address",
+        name: "_contract",
+        type: "address",
       },
       {
-        internalType: 'uint256',
-        name: 'bidAmount',
-        type: 'uint256',
+        internalType: "uint256",
+        name: "bidAmount",
+        type: "uint256",
       },
     ],
-    name: 'bid',
+    name: "bid",
     outputs: [],
-    stateMutability: 'payable',
-    type: 'function',
+    stateMutability: "payable",
+    type: "function",
   },
   {
     inputs: [],
-    name: 'box',
+    name: "box",
     outputs: [
       {
-        internalType: 'contract Box',
-        name: '',
-        type: 'address',
+        internalType: "contract Box",
+        name: "",
+        type: "address",
       },
     ],
-    stateMutability: 'view',
-    type: 'function',
+    stateMutability: "view",
+    type: "function",
   },
   {
     inputs: [
       {
-        internalType: 'address',
-        name: '',
-        type: 'address',
+        internalType: "address",
+        name: "",
+        type: "address",
       },
     ],
-    name: 'boxData',
+    name: "boxData",
     outputs: [
       {
-        internalType: 'uint256',
-        name: 'bidInitialTime',
-        type: 'uint256',
+        internalType: "uint256",
+        name: "bidInitialTime",
+        type: "uint256",
       },
       {
-        internalType: 'uint256',
-        name: 'bidEndTime',
-        type: 'uint256',
+        internalType: "uint256",
+        name: "bidEndTime",
+        type: "uint256",
       },
       {
-        internalType: 'uint256',
-        name: 'totalBid',
-        type: 'uint256',
+        internalType: "uint256",
+        name: "totalBid",
+        type: "uint256",
       },
       {
-        internalType: 'uint256',
-        name: 'basePrice',
-        type: 'uint256',
+        internalType: "uint256",
+        name: "basePrice",
+        type: "uint256",
       },
       {
-        internalType: 'uint256',
-        name: 'lastPrice',
-        type: 'uint256',
+        internalType: "uint256",
+        name: "lastPrice",
+        type: "uint256",
       },
       {
-        internalType: 'address',
-        name: 'currentWinner',
-        type: 'address',
+        internalType: "address",
+        name: "currentWinner",
+        type: "address",
       },
       {
-        internalType: 'address',
-        name: 'poolInitiator',
-        type: 'address',
+        internalType: "address",
+        name: "poolInitiator",
+        type: "address",
       },
     ],
-    stateMutability: 'view',
-    type: 'function',
+    stateMutability: "view",
+    type: "function",
   },
   {
     inputs: [
       {
-        internalType: 'address',
-        name: '',
-        type: 'address',
+        internalType: "address",
+        name: "",
+        type: "address",
       },
       {
-        internalType: 'uint256',
-        name: '',
-        type: 'uint256',
+        internalType: "uint256",
+        name: "",
+        type: "uint256",
       },
     ],
-    name: 'boxes',
+    name: "boxes",
     outputs: [
       {
-        internalType: 'address',
-        name: '',
-        type: 'address',
+        internalType: "address",
+        name: "",
+        type: "address",
       },
     ],
-    stateMutability: 'view',
-    type: 'function',
+    stateMutability: "view",
+    type: "function",
   },
   {
     inputs: [],
-    name: 'createYourBox',
+    name: "createYourBox",
     outputs: [],
-    stateMutability: 'nonpayable',
-    type: 'function',
+    stateMutability: "nonpayable",
+    type: "function",
   },
   {
     inputs: [
       {
-        internalType: 'uint256',
-        name: '_index',
-        type: 'uint256',
+        internalType: "uint256",
+        name: "_index",
+        type: "uint256",
       },
       {
-        internalType: 'uint256',
-        name: '_deadline',
-        type: 'uint256',
+        internalType: "uint256",
+        name: "_deadline",
+        type: "uint256",
       },
     ],
-    name: 'depositToBox',
+    name: "depositToBox",
     outputs: [],
-    stateMutability: 'payable',
-    type: 'function',
+    stateMutability: "payable",
+    type: "function",
   },
   {
     inputs: [
       {
-        internalType: 'address',
-        name: '_contract',
-        type: 'address',
+        internalType: "address",
+        name: "_contract",
+        type: "address",
       },
     ],
-    name: 'getBalance',
+    name: "getBalance",
     outputs: [
       {
-        internalType: 'uint256',
-        name: '',
-        type: 'uint256',
+        internalType: "uint256",
+        name: "",
+        type: "uint256",
       },
     ],
-    stateMutability: 'view',
-    type: 'function',
+    stateMutability: "view",
+    type: "function",
   },
   {
     inputs: [
       {
-        internalType: 'address',
-        name: '_contract',
-        type: 'address',
+        internalType: "address",
+        name: "_contract",
+        type: "address",
       },
     ],
-    name: 'getBoxData',
+    name: "getBoxData",
     outputs: [
       {
         components: [
           {
-            internalType: 'uint256',
-            name: 'bidInitialTime',
-            type: 'uint256',
+            internalType: "uint256",
+            name: "bidInitialTime",
+            type: "uint256",
           },
           {
-            internalType: 'uint256',
-            name: 'bidEndTime',
-            type: 'uint256',
+            internalType: "uint256",
+            name: "bidEndTime",
+            type: "uint256",
           },
           {
-            internalType: 'uint256',
-            name: 'totalBid',
-            type: 'uint256',
+            internalType: "uint256",
+            name: "totalBid",
+            type: "uint256",
           },
           {
-            internalType: 'uint256',
-            name: 'basePrice',
-            type: 'uint256',
+            internalType: "uint256",
+            name: "basePrice",
+            type: "uint256",
           },
           {
-            internalType: 'uint256',
-            name: 'lastPrice',
-            type: 'uint256',
+            internalType: "uint256",
+            name: "lastPrice",
+            type: "uint256",
           },
           {
-            internalType: 'address',
-            name: 'currentWinner',
-            type: 'address',
+            internalType: "address",
+            name: "currentWinner",
+            type: "address",
           },
           {
-            internalType: 'address',
-            name: 'poolInitiator',
-            type: 'address',
+            internalType: "address",
+            name: "poolInitiator",
+            type: "address",
           },
         ],
-        internalType: 'struct SwappyBox.BidTrack',
-        name: '',
-        type: 'tuple',
+        internalType: "struct SwappyBox.BidTrack",
+        name: "",
+        type: "tuple",
       },
     ],
-    stateMutability: 'view',
-    type: 'function',
+    stateMutability: "view",
+    type: "function",
   },
   {
     inputs: [
       {
-        internalType: 'address',
-        name: '_contract',
-        type: 'address',
+        internalType: "address",
+        name: "_contract",
+        type: "address",
       },
     ],
-    name: 'getPrice',
+    name: "getPrice",
     outputs: [
       {
-        internalType: 'uint256',
-        name: '',
-        type: 'uint256',
+        internalType: "uint256",
+        name: "",
+        type: "uint256",
       },
     ],
-    stateMutability: 'view',
-    type: 'function',
+    stateMutability: "view",
+    type: "function",
   },
   {
     inputs: [
       {
-        internalType: 'address',
-        name: '_contract',
-        type: 'address',
+        internalType: "address",
+        name: "_contract",
+        type: "address",
       },
     ],
-    name: 'obligate',
+    name: "obligate",
     outputs: [],
-    stateMutability: 'payable',
-    type: 'function',
+    stateMutability: "payable",
+    type: "function",
   },
   {
     inputs: [
       {
-        internalType: 'address',
-        name: '_contract',
-        type: 'address',
+        internalType: "address",
+        name: "_contract",
+        type: "address",
       },
     ],
-    name: 'withdraw',
+    name: "withdraw",
     outputs: [],
-    stateMutability: 'nonpayable',
-    type: 'function',
+    stateMutability: "nonpayable",
+    type: "function",
   },
 ];
 
@@ -543,8 +543,8 @@ export const useSimpleContract = () => {
     // Look for Talisman wallet first
     const talismanWallet = wallets.find(
       (wallet) =>
-        wallet.walletClientType === 'talisman' ||
-        wallet.connectorType === 'talisman'
+        wallet.walletClientType === "talisman" ||
+        wallet.connectorType === "talisman"
     );
 
     if (talismanWallet) {
@@ -560,10 +560,10 @@ export const useSimpleContract = () => {
     const preferredWallet = getPreferredWallet();
 
     if (!preferredWallet) {
-      throw new Error('No wallet connected via Privy');
+      throw new Error("No wallet connected via Privy");
     }
 
-    console.log('Connecting to wallet:', preferredWallet.walletClientType);
+    console.log("Connecting to wallet:", preferredWallet.walletClientType);
 
     const privyProvider = await preferredWallet.getEthereumProvider();
     const ethersProvider = new ethers.BrowserProvider(privyProvider);
@@ -583,7 +583,7 @@ export const useSimpleContract = () => {
       // After connecting, we need to get the fresh signer
       const preferredWallet = getPreferredWallet();
       if (!preferredWallet) {
-        throw new Error('No wallet available');
+        throw new Error("No wallet available");
       }
       const privyProvider = await preferredWallet.getEthereumProvider();
       const ethersProvider = new ethers.BrowserProvider(privyProvider);
@@ -632,7 +632,7 @@ export const useSimpleContract = () => {
         // currentLength now contains the actual length
       }
 
-      console.log('Current box count before creation:', currentLength);
+      console.log("Current box count before creation:", currentLength);
 
       const tx = await contract.createYourBox();
       const receipt = await tx.wait();
@@ -646,12 +646,12 @@ export const useSimpleContract = () => {
             return null;
           }
         })
-        .find((parsed: any) => parsed && parsed.name === 'BoxEvent');
+        .find((parsed: any) => parsed && parsed.name === "BoxEvent");
 
       if (event) {
         const { boxAddress, owner, index } = event.args;
         const e = event as EventLog;
-        console.log('📦 Event captured from tx:', {
+        console.log("📦 Event captured from tx:", {
           boxAddress: e.args?.boxAdd,
           creator: e.args?.initiator,
           index: index.toString(),
@@ -662,10 +662,10 @@ export const useSimpleContract = () => {
       }
 
       // fallback if no event
-      console.log('No BoxEvent emitted — using fallback index:', currentLength);
+      console.log("No BoxEvent emitted — using fallback index:", currentLength);
       return { index: currentLength };
     } catch (error) {
-      console.error('Error creating box:', error);
+      console.error("Error creating box:", error);
       throw error;
     } finally {
       setIsSubmitting(false);
@@ -683,7 +683,7 @@ export const useSimpleContract = () => {
     try {
       const contract = await getContract();
 
-      console.log('Depositing with params:', {
+      console.log("Depositing with params:", {
         index,
         deadline,
         strikeInUSDC,
@@ -694,13 +694,13 @@ export const useSimpleContract = () => {
         value: ethers.parseEther(valueETH.toString()),
       });
 
-      console.log('Transaction sent:', tx.hash);
+      console.log("Transaction sent:", tx.hash);
       await tx.wait();
-      console.log('Transaction confirmed');
+      console.log("Transaction confirmed");
       setShowSuccess(true);
     } catch (error: any) {
-      console.error('Error depositing to box:', error);
-      if (error.data) console.error('Error data:', error.data);
+      console.error("Error depositing to box:", error);
+      if (error.data) console.error("Error data:", error.data);
       throw error;
     } finally {
       setIsSubmitting(false);
@@ -713,17 +713,17 @@ export const useSimpleContract = () => {
     try {
       const contract = await getContract(); // Added await here
 
-      console.log('biding wid params : ', {
+      console.log("biding wid params : ", {
         boxAddress,
         value: ethers.parseEther(ethValue),
       });
-      const tx = await contract['bid(address)'](boxAddress, {
+      const tx = await contract["bid(address)"](boxAddress, {
         value: ethers.parseEther(ethValue),
       });
       await tx.wait();
       setShowSuccess(true);
     } catch (error) {
-      console.error('Error bidding:', error);
+      console.error("Error bidding:", error);
     } finally {
       setIsSubmitting(false);
       setTimeout(() => setShowSuccess(false), 3000);
@@ -738,7 +738,7 @@ export const useSimpleContract = () => {
       await tx.wait();
       setShowSuccess(true);
     } catch (error) {
-      console.error('Error obligating:', error);
+      console.error("Error obligating:", error);
     } finally {
       setIsSubmitting(false);
       setTimeout(() => setShowSuccess(false), 3000);
@@ -753,7 +753,7 @@ export const useSimpleContract = () => {
       await tx.wait();
       setShowSuccess(true);
     } catch (error) {
-      console.error('Error withdrawing:', error);
+      console.error("Error withdrawing:", error);
     } finally {
       setIsSubmitting(false);
       setTimeout(() => setShowSuccess(false), 3000);
@@ -767,10 +767,10 @@ export const useSimpleContract = () => {
       const data = await contract.getBoxData(boxAddress);
 
       if (
-        data.basePrice.toString() === '0' &&
+        data.basePrice.toString() === "0" &&
         data.currentWinner === ethers.ZeroAddress
       ) {
-        console.warn('Uninitialized or empty box:', boxAddress);
+        console.warn("Uninitialized or empty box:", boxAddress);
         return null;
       }
 
@@ -781,7 +781,7 @@ export const useSimpleContract = () => {
         currentHolder: data.currentWinner,
         isExpired: Date.now() / 1000 > Number(data.bidEndTime),
         deadline: new Date(Number(data.bidEndTime) * 1000),
-        tokenType: 'ETH',
+        tokenType: "ETH",
       };
     } catch (error) {
       console.error(`Error fetching data for box ${boxAddress}:`, error);
@@ -796,10 +796,10 @@ export const useSimpleContract = () => {
       const contract = await getContract();
       const data = await contract.getAllBoxes();
 
-      console.log('Fetched Boxes:', data);
+      // console.log('Fetched Boxes:', data);
       return data;
     } catch (err) {
-      console.error('Error fetching boxes:', err);
+      console.error("Error fetching boxes:", err);
       return [];
     }
   };

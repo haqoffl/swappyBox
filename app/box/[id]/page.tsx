@@ -1,12 +1,12 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import { useParams } from 'next/navigation';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
+import { useState, useEffect } from "react";
+import { useParams } from "next/navigation";
+import { motion, AnimatePresence } from "framer-motion";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
 import {
   Table,
   TableBody,
@@ -14,48 +14,48 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '@/components/ui/table';
-import { Clock, User, Activity, Zap, AlertCircle } from 'lucide-react';
-import Link from 'next/link';
-import Header from '@/components/header';
-import { usePrivy } from '@privy-io/react-auth';
-import { useSimpleContract } from '@/lib/contract-service';
+} from "@/components/ui/table";
+import { Clock, User, Activity, Zap, AlertCircle } from "lucide-react";
+import Link from "next/link";
+import Header from "@/components/header";
+import { usePrivy } from "@privy-io/react-auth";
+import { useSimpleContract } from "@/lib/contract-service";
 
 const mockTradeHistory = [
   {
     id: 1,
-    trader: '0x742d35Cc6634C0532925a3b8D4C2C4e4C4C4C4C4',
-    bidAmount: '2.40 ETH',
+    trader: "0x742d35Cc6634C0532925a3b8D4C2C4e4C4C4C4C4",
+    bidAmount: "2.40 ETH",
     timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000),
-    marginProfit: '0.12 ETH',
+    marginProfit: "0.12 ETH",
   },
   {
     id: 2,
-    trader: '0x891d35Cc6634C0532925a3b8D4C2C4e4C4C4C4C4',
-    bidAmount: '2.35 ETH',
+    trader: "0x891d35Cc6634C0532925a3b8D4C2C4e4C4C4C4C4",
+    bidAmount: "2.35 ETH",
     timestamp: new Date(Date.now() - 4 * 60 * 60 * 1000),
-    marginProfit: '0.08 ETH',
+    marginProfit: "0.08 ETH",
   },
   {
     id: 3,
-    trader: '0x456d35Cc6634C0532925a3b8D4C2C4e4C4C4C4C4',
-    bidAmount: '2.32 ETH',
+    trader: "0x456d35Cc6634C0532925a3b8D4C2C4e4C4C4C4C4",
+    bidAmount: "2.32 ETH",
     timestamp: new Date(Date.now() - 6 * 60 * 60 * 1000),
-    marginProfit: '0.05 ETH',
+    marginProfit: "0.05 ETH",
   },
   {
     id: 4,
-    trader: '0x789d35Cc6634C0532925a3b8D4C2C4e4C4C4C4C4',
-    bidAmount: '2.30 ETH',
+    trader: "0x789d35Cc6634C0532925a3b8D4C2C4e4C4C4C4C4",
+    bidAmount: "2.30 ETH",
     timestamp: new Date(Date.now() - 8 * 60 * 60 * 1000),
-    marginProfit: '0.02 ETH',
+    marginProfit: "0.02 ETH",
   },
 ];
 
 export default function BoxInfoPage() {
   const params = useParams();
   const { connectWallet, account, getBoxData, bid } = useSimpleContract();
-  const [bidAmount, setBidAmount] = useState('');
+  const [bidAmount, setBidAmount] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
   const privy = usePrivy();
@@ -69,7 +69,7 @@ export default function BoxInfoPage() {
 
   // Helper function to shorten addresses
   const shortenAddress = (address: string) => {
-    if (!address) return '';
+    if (!address) return "";
     return `${address.slice(0, 6)}...${address.slice(-4)}`;
   };
 
@@ -79,7 +79,7 @@ export default function BoxInfoPage() {
 
   // Countdown Timer Component
   const CountdownTimer = ({ deadline }: { deadline: Date }) => {
-    const [timeLeft, setTimeLeft] = useState('');
+    const [timeLeft, setTimeLeft] = useState("");
 
     useEffect(() => {
       const updateTimer = () => {
@@ -87,7 +87,7 @@ export default function BoxInfoPage() {
         const distance = deadline.getTime() - now;
 
         if (distance < 0) {
-          setTimeLeft('EXPIRED');
+          setTimeLeft("EXPIRED");
           return;
         }
 
@@ -115,7 +115,7 @@ export default function BoxInfoPage() {
     return (
       <span
         className={`font-mono text-sm ${
-          timeLeft === 'EXPIRED' ? 'text-red-400' : 'text-primary'
+          timeLeft === "EXPIRED" ? "text-red-400" : "text-primary"
         }`}
       >
         {timeLeft}
@@ -141,14 +141,14 @@ export default function BoxInfoPage() {
 
         const data = await getBoxData(params.id as string);
         if (data === null) {
-          setError('Box not found or not initialized');
+          setError("Box not found or not initialized");
           setBoxDetails(null);
         } else {
           setBoxDetails(data);
         }
       } catch (err) {
-        console.error('Failed to fetch box data:', err);
-        setError('Failed to fetch box data');
+        console.error("Failed to fetch box data:", err);
+        setError("Failed to fetch box data");
         setBoxDetails(null);
       } finally {
         setLoading(false);
@@ -168,9 +168,9 @@ export default function BoxInfoPage() {
   }, [params?.id, isAuthenticated, account]);
 
   const handleBid = async () => {
-    console.log('handleBid clicked'); // ← Add this
+    console.log("handleBid clicked"); // ← Add this
     if (!isAuthenticated || !bidAmount || !boxDetails) return;
-    console.log('bid params :', bidAmount, boxDetails);
+    console.log("bid params :", bidAmount, boxDetails);
 
     // Assuming boxDetails.ownerAddress holds the owner address and account is connected wallet
     if (isCurrentHolder) {
@@ -185,15 +185,15 @@ export default function BoxInfoPage() {
       setIsSubmitting(true);
       setError(null);
       const boxAddress = boxDetails.boxAddress || params.id;
-      console.log('intenral ', boxAddress);
+      console.log("intenral ", boxAddress);
       await bid(boxAddress, bidAmount);
 
       setShowSuccess(true);
-      setBidAmount('');
+      setBidAmount("");
       const updatedData = await getBoxData(boxAddress);
       setBoxDetails(updatedData);
     } catch (err) {
-      console.error('Bid failed:', err);
+      console.error("Bid failed:", err);
     } finally {
       setIsSubmitting(false);
       setTimeout(() => setShowSuccess(false), 3000);
@@ -236,7 +236,7 @@ export default function BoxInfoPage() {
             initial={{ opacity: 0, scale: 0.8, y: 30 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.8, y: 30 }}
-            transition={{ duration: 0.4, ease: 'easeInOut' }}
+            transition={{ duration: 0.4, ease: "easeInOut" }}
             className="fixed bottom-10 right-10 z-50 bg-green-500 text-white px-6 py-4 rounded-xl shadow-lg"
           >
             🎉 Bid placed successfully!
@@ -253,7 +253,7 @@ export default function BoxInfoPage() {
         {/* Box Details Card */}
         <motion.div
           whileHover={{ y: -5 }}
-          transition={{ type: 'spring', stiffness: 300 }}
+          transition={{ type: "spring", stiffness: 300 }}
         >
           <Card className="bg-[#222222] border-[#222222] hover:border-primary transition-all duration-300 glow-primary">
             <CardHeader>
@@ -269,11 +269,9 @@ export default function BoxInfoPage() {
                 </motion.span>
                 <motion.div
                   whileHover={{ scale: 1.1, rotate: 5 }}
-                  transition={{ type: 'spring', stiffness: 400 }}
+                  transition={{ type: "spring", stiffness: 400 }}
                 >
-                  <Badge className="bg-primary text-black font-bold">
-                    {boxDetails.tokenType}
-                  </Badge>
+                  <Badge className="bg-primary text-black font-bold">WND</Badge>
                 </motion.div>
               </CardTitle>
             </CardHeader>
@@ -281,7 +279,7 @@ export default function BoxInfoPage() {
               <div className="grid grid-cols-2 gap-4">
                 <motion.div
                   whileHover={{ scale: 1.05, x: 5 }}
-                  transition={{ type: 'spring', stiffness: 300 }}
+                  transition={{ type: "spring", stiffness: 300 }}
                 >
                   <p className="text-sm text-white/60">Base Price</p>
                   <p className="text-lg font-semibold text-white">
@@ -290,7 +288,7 @@ export default function BoxInfoPage() {
                 </motion.div>
                 <motion.div
                   whileHover={{ scale: 1.05, x: 5 }}
-                  transition={{ type: 'spring', stiffness: 300 }}
+                  transition={{ type: "spring", stiffness: 300 }}
                 >
                   <p className="text-sm text-white/60">Market Price</p>
                   <motion.p
@@ -301,12 +299,12 @@ export default function BoxInfoPage() {
                       repeat: Number.POSITIVE_INFINITY,
                     }}
                   >
-                    {boxDetails?.marketPrice ?? '0'} ETH
+                    {boxDetails?.marketPrice ?? "0"} ETH
                   </motion.p>
                 </motion.div>
                 <motion.div
                   whileHover={{ scale: 1.05, x: 5 }}
-                  transition={{ type: 'spring', stiffness: 300 }}
+                  transition={{ type: "spring", stiffness: 300 }}
                 >
                   <p className="text-sm text-white/60">Last Bid Price</p>
                   <p className="text-lg font-semibold text-white">
@@ -315,7 +313,7 @@ export default function BoxInfoPage() {
                 </motion.div>
                 <motion.div
                   whileHover={{ scale: 1.05, x: 5 }}
-                  transition={{ type: 'spring', stiffness: 300 }}
+                  transition={{ type: "spring", stiffness: 300 }}
                 >
                   <p className="text-sm text-white/60">Total Bidders</p>
                   <p className="text-lg font-semibold text-white">
@@ -328,7 +326,7 @@ export default function BoxInfoPage() {
                 <motion.div
                   className="flex items-center justify-between mb-2"
                   whileHover={{ x: 5 }}
-                  transition={{ type: 'spring', stiffness: 300 }}
+                  transition={{ type: "spring", stiffness: 300 }}
                 >
                   <span className="text-sm text-white/60">Current Holder</span>
                   <div className="flex items-center gap-2">
@@ -358,7 +356,7 @@ export default function BoxInfoPage() {
 
         <motion.div
           whileHover={{ y: -5 }}
-          transition={{ type: 'spring', stiffness: 300 }}
+          transition={{ type: "spring", stiffness: 300 }}
           className="my-4"
         >
           <Card className="bg-[#222222] border-[#222222] hover:border-primary transition-all duration-300">
@@ -392,7 +390,7 @@ export default function BoxInfoPage() {
                     </label>
                     <motion.div
                       whileFocus={{ scale: 1.02 }}
-                      transition={{ type: 'spring', stiffness: 300 }}
+                      transition={{ type: "spring", stiffness: 300 }}
                     >
                       <Input
                         type="number"
@@ -404,7 +402,7 @@ export default function BoxInfoPage() {
                       />
                     </motion.div>
                     <p className="text-xs text-white/60">
-                      Minimum bid: {boxDetails.lastBidPrice} + 0.01{' '}
+                      Minimum bid: {boxDetails.lastBidPrice} + 0.01{" "}
                       {boxDetails.tokenType}
                     </p>
                   </div>
@@ -412,7 +410,7 @@ export default function BoxInfoPage() {
                   <motion.div
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
-                    transition={{ type: 'spring', stiffness: 400 }}
+                    transition={{ type: "spring", stiffness: 400 }}
                   >
                     <Button
                       className="w-full bg-primary hover:bg-[#169976] text-black font-bold text-lg py-6 glow-primary-strong"
@@ -427,13 +425,13 @@ export default function BoxInfoPage() {
                         transition={{
                           duration: 1,
                           repeat: isSubmitting ? Number.POSITIVE_INFINITY : 0,
-                          ease: 'linear',
+                          ease: "linear",
                         }}
                       >
-                        {isSubmitting ? '⚡' : '🚀'}
+                        {isSubmitting ? "⚡" : "🚀"}
                       </motion.span>
                       <span className="ml-2">
-                        {isSubmitting ? 'Placing Bid...' : 'Bid Now!'}
+                        {isSubmitting ? "Placing Bid..." : "Bid Now!"}
                       </span>
                     </Button>
                   </motion.div>
@@ -455,7 +453,7 @@ export default function BoxInfoPage() {
                         onClick={handleRedeem}
                         disabled={isSubmitting}
                       >
-                        {isSubmitting ? 'Processing...' : 'Redeem Tokens'}
+                        {isSubmitting ? "Processing..." : "Redeem Tokens"}
                       </Button>
                     </motion.div>
                   )}
@@ -475,7 +473,7 @@ export default function BoxInfoPage() {
         {/* Trade History Card */}
         <motion.div
           whileHover={{ y: -5 }}
-          transition={{ type: 'spring', stiffness: 300 }}
+          transition={{ type: "spring", stiffness: 300 }}
         >
           <Card className="bg-[#222222] border-[#222222] hover:border-primary transition-all duration-300">
             <CardHeader>
@@ -501,7 +499,7 @@ export default function BoxInfoPage() {
                       transition={{ delay: 0.6 + index * 0.1 }}
                       whileHover={{
                         x: 5,
-                        backgroundColor: 'rgba(29, 205, 159, 0.1)',
+                        backgroundColor: "rgba(29, 205, 159, 0.1)",
                       }}
                     >
                       <TableCell className="font-mono text-xs text-white">

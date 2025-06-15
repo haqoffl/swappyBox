@@ -1,20 +1,21 @@
-'use client';
+"use client";
 
-import type React from 'react';
+import type React from "react";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 
-import { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+import { useState, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
+} from "@/components/ui/select";
 import {
   Table,
   TableBody,
@@ -22,7 +23,7 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '@/components/ui/table';
+} from "@/components/ui/table";
 import {
   Wallet,
   TrendingUp,
@@ -33,11 +34,12 @@ import {
   AlertCircle,
   Calendar,
   Clock,
-} from 'lucide-react';
-import Link from 'next/link';
-import Header from '@/components/header';
-import { usePrivy } from '@privy-io/react-auth';
-import { useSimpleContract } from '../../lib/contract-service'; // adjust path as needed
+} from "lucide-react";
+import Link from "next/link";
+import Header from "@/components/header";
+import { usePrivy } from "@privy-io/react-auth";
+import { useSimpleContract } from "../../lib/contract-service"; // adjust path as needed
+import CoreBoxForm from "@/components/corebox";
 
 interface BoxFormData {
   tokenType: string;
@@ -68,12 +70,12 @@ export default function CreateBoxPage() {
   const [currentStep, setCurrentStep] = useState(1);
   const [createdBoxIndex, setCreatedBoxIndex] = useState<number | null>(null);
   const [formData, setFormData] = useState<BoxFormData>({
-    tokenType: '',
-    tokenAmount: '',
-    tokenAddress: '',
-    estimatedUSD: '',
-    deadline: '',
-    walletAddress: '',
+    tokenType: "",
+    tokenAmount: "",
+    tokenAddress: "",
+    estimatedUSD: "",
+    deadline: "",
+    walletAddress: "",
   });
   const [createdBoxAddress, setCreatedBoxAddress] = useState<
     typeof address | null
@@ -124,9 +126,9 @@ export default function CreateBoxPage() {
     }));
 
     // Auto-calculate USD value
-    if (field === 'tokenAmount' || field === 'tokenType') {
-      const amount = field === 'tokenAmount' ? value : formData.tokenAmount;
-      const token = field === 'tokenType' ? value : formData.tokenType;
+    if (field === "tokenAmount" || field === "tokenType") {
+      const amount = field === "tokenAmount" ? value : formData.tokenAmount;
+      const token = field === "tokenType" ? value : formData.tokenType;
       if (amount && token) {
         const prices: Record<string, number> = {
           ETH: 2000,
@@ -147,7 +149,7 @@ export default function CreateBoxPage() {
     e.preventDefault();
 
     if (!isAuthenticated) {
-      alert('Please connect your wallet first!');
+      alert("Please connect your wallet first!");
       return;
     }
 
@@ -155,14 +157,14 @@ export default function CreateBoxPage() {
       try {
         await connectWallet();
       } catch (error) {
-        console.error('Failed to connect wallet:', error);
-        alert('Failed to connect wallet. Please try again.');
+        console.error("Failed to connect wallet:", error);
+        alert("Failed to connect wallet. Please try again.");
         return;
       }
     }
 
     if (!formData.tokenType || !formData.tokenAmount || !formData.deadline) {
-      alert('Please fill in all required fields!');
+      alert("Please fill in all required fields!");
       return;
     }
 
@@ -171,11 +173,11 @@ export default function CreateBoxPage() {
 
     try {
       // Step 1: Create box and get the actual index
-      console.log('Creating box...');
+      console.log("Creating box...");
       const boxResult = await createBox();
 
       if (!boxResult) {
-        throw new Error('Failed to get box information after creation');
+        throw new Error("Failed to get box information after creation");
       }
 
       // Step 2: Get values dynamically from form
@@ -185,13 +187,13 @@ export default function CreateBoxPage() {
         new Date(formData.deadline).getTime() / 1000
       );
       const strikeInUSDC = Math.floor(
-        parseFloat(formData.estimatedUSD.replace(/,/g, '').replace('$', '')) *
+        parseFloat(formData.estimatedUSD.replace(/,/g, "").replace("$", "")) *
           1e6
       );
       const valueETH = formData.tokenAmount;
 
-      console.log('Using box index:', boxIndex);
-      console.log('Deposit parameters:', {
+      console.log("Using box index:", boxIndex);
+      console.log("Deposit parameters:", {
         boxIndex,
         deadlineTimestamp,
         strikeInUSDC,
@@ -204,8 +206,8 @@ export default function CreateBoxPage() {
       setCreatedBoxIndex(boxIndex);
       setCreatedBoxAddress(boxAddress);
     } catch (error) {
-      console.error('Error in box creation/deposit process:', error);
-      alert('Error creating box or depositing. Please try again.');
+      console.error("Error in box creation/deposit process:", error);
+      alert("Error creating box or depositing. Please try again.");
       setCurrentStep(1);
       setIsSubmitting(false);
     }
@@ -213,7 +215,7 @@ export default function CreateBoxPage() {
 
   const handleWithdraw = async () => {
     if (!account || createdBoxIndex === null) {
-      alert('No box available for withdrawal');
+      alert("No box available for withdrawal");
       return;
     }
 
@@ -221,13 +223,13 @@ export default function CreateBoxPage() {
     try {
       // You'll need to get the actual box address from your contract
       // This is a placeholder - implement according to your contract structure
-      const boxAddress = `0x${createdBoxIndex.toString().padStart(40, '0')}`;
+      const boxAddress = `0x${createdBoxIndex.toString().padStart(40, "0")}`;
       console.log(boxAddress);
       // await withdraw(boxAddress);
-      alert('Withdrawal functionality will be available after implementation');
+      alert("Withdrawal functionality will be available after implementation");
     } catch (error) {
-      console.error('Error withdrawing:', error);
-      alert('Error withdrawing. Please try again.');
+      console.error("Error withdrawing:", error);
+      alert("Error withdrawing. Please try again.");
     } finally {
       setIsSubmitting(false);
     }
@@ -242,18 +244,18 @@ export default function CreateBoxPage() {
 
   // Mock data for display (replace with real data from your contract)
   const mockCreatedBoxStats = {
-    transactionCut: '2.5%',
-    numberOfTrades: '12',
-    uniqueTraders: '8',
-    totalVolume: '$24,500',
+    transactionCut: "2.5%",
+    numberOfTrades: "12",
+    uniqueTraders: "8",
+    totalVolume: "$24,500",
   };
 
   const mockTraderActivity = [
     {
       id: 1,
-      trader: '0x1234...5678',
-      bidAmount: '1.5 ETH',
-      marginProfit: '$50.25',
+      trader: "0x1234...5678",
+      bidAmount: "1.5 ETH",
+      marginProfit: "$50.25",
       timestamp: new Date(),
     },
     // Add more mock data as needed
@@ -269,14 +271,14 @@ export default function CreateBoxPage() {
               className="text-center py-8"
               initial={{ scale: 0, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
-              transition={{ type: 'spring', stiffness: 200, delay: 0.3 }}
+              transition={{ type: "spring", stiffness: 200, delay: 0.3 }}
             >
               <motion.div
                 animate={{ rotate: 360 }}
                 transition={{
                   duration: 2,
                   repeat: Number.POSITIVE_INFINITY,
-                  ease: 'linear',
+                  ease: "linear",
                 }}
                 className="inline-block text-6xl mb-4"
               >
@@ -347,8 +349,8 @@ export default function CreateBoxPage() {
                       disabled={isSubmitting}
                     >
                       {isSubmitting
-                        ? 'Processing...'
-                        : 'Withdraw (Available after deadline + 24h)'}
+                        ? "Processing..."
+                        : "Withdraw (Available after deadline + 24h)"}
                     </Button>
                   </div>
                 </CardContent>
@@ -434,7 +436,7 @@ export default function CreateBoxPage() {
               <motion.div
                 key={step}
                 className={`flex items-center gap-2 ${
-                  currentStep >= step ? 'text-primary' : 'text-white/40'
+                  currentStep >= step ? "text-primary" : "text-white/40"
                 }`}
                 animate={currentStep === step ? { scale: [1, 1.1, 1] } : {}}
                 transition={{
@@ -445,16 +447,16 @@ export default function CreateBoxPage() {
                 <div
                   className={`w-8 h-8 rounded-full flex items-center justify-center font-bold ${
                     currentStep >= step
-                      ? 'bg-primary text-black'
-                      : 'bg-[#222222] text-white/40'
+                      ? "bg-primary text-black"
+                      : "bg-[#222222] text-white/40"
                   }`}
                 >
                   {step}
                 </div>
                 <span className="text-sm font-medium">
-                  {step === 1 && 'Configure'}
-                  {step === 2 && 'Processing'}
-                  {step === 3 && 'Complete'}
+                  {step === 1 && "Configure"}
+                  {step === 2 && "Processing"}
+                  {step === 3 && "Complete"}
                 </span>
                 {step < 3 && <div className="w-8 h-0.5 bg-[#222222]" />}
               </motion.div>
@@ -476,14 +478,14 @@ export default function CreateBoxPage() {
               className="text-center"
               initial={{ scale: 0.8, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
-              transition={{ type: 'spring', stiffness: 200 }}
+              transition={{ type: "spring", stiffness: 200 }}
             >
               <motion.div
                 animate={{ rotate: 360 }}
                 transition={{
                   duration: 2,
                   repeat: Number.POSITIVE_INFINITY,
-                  ease: 'linear',
+                  ease: "linear",
                 }}
                 className="text-6xl mb-4"
               >
@@ -498,9 +500,9 @@ export default function CreateBoxPage() {
               <motion.div className="w-64 h-2 bg-[#222222] rounded-full mx-auto mt-4 overflow-hidden">
                 <motion.div
                   className="h-full bg-primary rounded-full"
-                  initial={{ width: '0%' }}
-                  animate={{ width: '100%' }}
-                  transition={{ duration: 2.5, ease: 'easeInOut' }}
+                  initial={{ width: "0%" }}
+                  animate={{ width: "100%" }}
+                  transition={{ duration: 2.5, ease: "easeInOut" }}
                 />
               </motion.div>
             </motion.div>
@@ -538,181 +540,203 @@ export default function CreateBoxPage() {
             )}
           </AnimatePresence>
 
-          <Card className="bg-[#222222] border-[#222222] hover:border-primary transition-all duration-300 glow-primary">
-            <CardHeader>
-              <CardTitle className="text-white flex items-center gap-2">
-                <Sparkles className="h-5 w-5 text-primary" />
-                Box Configuration
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <form onSubmit={handleSubmit} className="space-y-6">
-                {/* Token Type */}
-                <div className="space-y-2">
-                  <Label htmlFor="tokenType" className="text-white">
-                    Token Type *
-                  </Label>
-                  <Select
-                    value={formData.tokenType}
-                    onValueChange={(value) =>
-                      handleInputChange('tokenType', value)
-                    }
-                    disabled={!isAuthenticated}
-                  >
-                    <SelectTrigger className="bg-black border-[#222222] text-white focus:border-primary">
-                      <SelectValue placeholder="Select token type" />
-                    </SelectTrigger>
-                    <SelectContent className="bg-[#222222] border-[#222222]">
-                      <SelectItem
-                        value="ETH"
-                        className="text-white hover:bg-black"
+          <Tabs defaultValue="coinBox" className="w-full">
+            <TabsList className="w-full grid grid-cols-2 bg-[#111] border border-[#222]">
+              <TabsTrigger value="coinBox" className="text-white">
+                Coin Box
+              </TabsTrigger>
+              <TabsTrigger value="coreBox" className="text-white">
+                Core Box
+              </TabsTrigger>
+            </TabsList>
+
+            {/* Coin Box Form */}
+            <TabsContent value="coinBox">
+              <Card className="bg-[#222222] border-[#222222] hover:border-primary transition-all duration-300 glow-primary">
+                <CardHeader>
+                  <CardTitle className="text-white flex items-center gap-2">
+                    <Sparkles className="h-5 w-5 text-primary" />
+                    Coin Box Configuration
+                  </CardTitle>
+                </CardHeader>
+
+                <CardContent>
+                  <form onSubmit={handleSubmit} className="space-y-6">
+                    {/* Token Type */}
+                    <div className="space-y-2">
+                      <Label htmlFor="tokenType" className="text-white">
+                        Token Type *
+                      </Label>
+                      <Select
+                        value={formData.tokenType}
+                        onValueChange={(value) =>
+                          handleInputChange("tokenType", value)
+                        }
+                        disabled={!isAuthenticated}
                       >
-                        ETH - Ethereum
-                      </SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
+                        <SelectTrigger className="bg-black border-[#222222] text-white focus:border-primary">
+                          <SelectValue placeholder="Select token type" />
+                        </SelectTrigger>
+                        <SelectContent className="bg-[#222222] border-[#222222]">
+                          <SelectItem
+                            value="ETH"
+                            className="text-white hover:bg-black"
+                          >
+                            WND - Westernd Tokens
+                          </SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
 
-                {/* Token Amount */}
-                <div className="space-y-2">
-                  <Label htmlFor="tokenAmount" className="text-white">
-                    Token Amount *
-                  </Label>
-                  <Input
-                    id="tokenAmount"
-                    type="number"
-                    step="0.000001"
-                    placeholder="Enter token amount"
-                    value={formData.tokenAmount}
-                    onChange={(e) =>
-                      handleInputChange('tokenAmount', e.target.value)
-                    }
-                    required
-                    disabled={!isAuthenticated}
-                    className="bg-black border-[#222222] text-white focus:border-primary"
-                  />
-                </div>
-
-                {/* Token Address (for ERC20) */}
-                <AnimatePresence>
-                  {formData.tokenType && formData.tokenType !== 'ETH' && (
-                    <motion.div
-                      className="space-y-2"
-                      initial={{ height: 0, opacity: 0 }}
-                      animate={{ height: 'auto', opacity: 1 }}
-                      exit={{ height: 0, opacity: 0 }}
-                      transition={{ duration: 0.3 }}
-                    >
-                      <Label htmlFor="tokenAddress" className="text-white">
-                        Token Address (Optional)
+                    {/* Token Amount */}
+                    <div className="space-y-2">
+                      <Label htmlFor="tokenAmount" className="text-white">
+                        Token Amount *
                       </Label>
                       <Input
-                        id="tokenAddress"
-                        placeholder="0x..."
-                        value={formData.tokenAddress}
+                        id="tokenAmount"
+                        type="number"
+                        step="0.000001"
+                        placeholder="Enter token amount"
+                        value={formData.tokenAmount}
                         onChange={(e) =>
-                          handleInputChange('tokenAddress', e.target.value)
+                          handleInputChange("tokenAmount", e.target.value)
                         }
+                        required
                         disabled={!isAuthenticated}
                         className="bg-black border-[#222222] text-white focus:border-primary"
                       />
+                    </div>
+
+                    {/* Token Address (for ERC20) */}
+                    <AnimatePresence>
+                      {formData.tokenType && formData.tokenType !== "ETH" && (
+                        <motion.div
+                          className="space-y-2"
+                          initial={{ height: 0, opacity: 0 }}
+                          animate={{ height: "auto", opacity: 1 }}
+                          exit={{ height: 0, opacity: 0 }}
+                          transition={{ duration: 0.3 }}
+                        >
+                          <Label htmlFor="tokenAddress" className="text-white">
+                            Token Address (Optional)
+                          </Label>
+                          <Input
+                            id="tokenAddress"
+                            placeholder="0x..."
+                            value={formData.tokenAddress}
+                            onChange={(e) =>
+                              handleInputChange("tokenAddress", e.target.value)
+                            }
+                            disabled={!isAuthenticated}
+                            className="bg-black border-[#222222] text-white focus:border-primary"
+                          />
+                          <p className="text-xs text-white/60">
+                            Leave empty to use default {formData.tokenType}{" "}
+                            contract
+                          </p>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+
+                    {/* Estimated USD Value */}
+                    <div className="space-y-2">
+                      <Label htmlFor="estimatedUSD" className="text-white">
+                        Estimated USD Value
+                      </Label>
+                      <Input
+                        id="estimatedUSD"
+                        placeholder="Auto-calculated"
+                        value={
+                          formData.estimatedUSD
+                            ? `$${formData.estimatedUSD}`
+                            : ""
+                        }
+                        disabled
+                        className="bg-black border-[#222222] text-primary"
+                      />
+                    </div>
+
+                    {/* Box Deadline */}
+                    <div className="space-y-2">
+                      <Label className="text-white flex items-center gap-2">
+                        <Calendar className="h-4 w-4 text-primary" />
+                        Box Deadline *
+                      </Label>
+                      <Input
+                        type="datetime-local"
+                        value={formData.deadline}
+                        onChange={(e) =>
+                          handleInputChange("deadline", e.target.value)
+                        }
+                        min={new Date().toISOString().slice(0, 16)}
+                        required
+                        disabled={!isAuthenticated}
+                        className="bg-black border-[#222222] text-white focus:border-primary"
+                      />
+                      {formData.deadline && (
+                        <p className="text-xs text-primary flex items-center gap-1">
+                          <Clock className="h-3 w-3" />
+                          Deadline:{" "}
+                          {new Date(formData.deadline).toLocaleString()}
+                        </p>
+                      )}
+                    </div>
+
+                    {/* Wallet Address */}
+                    <div className="space-y-2">
+                      <Label htmlFor="walletAddress" className="text-white">
+                        Your Wallet Address
+                      </Label>
+                      <div className="flex items-center gap-2">
+                        <Wallet className="h-4 w-4 text-primary" />
+                        <Input
+                          id="walletAddress"
+                          value={formData.walletAddress}
+                          disabled
+                          className="font-mono bg-black border-[#222222] text-white"
+                        />
+                      </div>
                       <p className="text-xs text-white/60">
-                        Leave empty to use default {formData.tokenType} contract
+                        {isAuthenticated
+                          ? "Connected wallet address (auto-filled)"
+                          : "Connect wallet to auto-fill"}
                       </p>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
+                    </div>
 
-                {/* Estimated USD Value */}
-                <div className="space-y-2">
-                  <Label htmlFor="estimatedUSD" className="text-white">
-                    Estimated USD Value
-                  </Label>
-                  <Input
-                    id="estimatedUSD"
-                    placeholder="Auto-calculated"
-                    value={
-                      formData.estimatedUSD ? `$${formData.estimatedUSD}` : ''
-                    }
-                    disabled
-                    className="bg-black border-[#222222] text-primary"
-                  />
-                </div>
+                    {/* Submit Button */}
+                    <Button
+                      type="submit"
+                      className="w-full bg-primary hover:bg-[#169976] text-black font-bold text-lg py-6 glow-primary-strong"
+                      size="lg"
+                      disabled={!isFormValid || isSubmitting}
+                    >
+                      <motion.span
+                        animate={isSubmitting ? { rotate: 360 } : {}}
+                        transition={{
+                          duration: 1,
+                          repeat: isSubmitting ? Number.POSITIVE_INFINITY : 0,
+                          ease: "linear",
+                        }}
+                      >
+                        {isSubmitting ? "⚡" : "🚀"}
+                      </motion.span>
+                      <span className="ml-2">
+                        {!isAuthenticated
+                          ? "Connect Wallet to Create"
+                          : isSubmitting
+                          ? "Creating Box..."
+                          : "Create SwapBox"}
+                      </span>
+                    </Button>
+                  </form>
+                </CardContent>
+              </Card>
+            </TabsContent>
 
-                {/* Box Deadline */}
-                <div className="space-y-2">
-                  <Label className="text-white flex items-center gap-2">
-                    <Calendar className="h-4 w-4 text-primary" />
-                    Box Deadline *
-                  </Label>
-                  <Input
-                    type="datetime-local"
-                    value={formData.deadline}
-                    onChange={(e) =>
-                      handleInputChange('deadline', e.target.value)
-                    }
-                    min={new Date().toISOString().slice(0, 16)}
-                    required
-                    disabled={!isAuthenticated}
-                    className="bg-black border-[#222222] text-white focus:border-primary"
-                  />
-                  {formData.deadline && (
-                    <p className="text-xs text-primary flex items-center gap-1">
-                      <Clock className="h-3 w-3" />
-                      Deadline: {new Date(formData.deadline).toLocaleString()}
-                    </p>
-                  )}
-                </div>
-
-                {/* Wallet Address */}
-                <div className="space-y-2">
-                  <Label htmlFor="walletAddress" className="text-white">
-                    Your Wallet Address
-                  </Label>
-                  <div className="flex items-center gap-2">
-                    <Wallet className="h-4 w-4 text-primary" />
-                    <Input
-                      id="walletAddress"
-                      value={formData.walletAddress}
-                      disabled
-                      className="font-mono bg-black border-[#222222] text-white"
-                    />
-                  </div>
-                  <p className="text-xs text-white/60">
-                    {isAuthenticated
-                      ? 'Connected wallet address (auto-filled)'
-                      : 'Connect wallet to auto-fill'}
-                  </p>
-                </div>
-
-                {/* Submit Button */}
-                <Button
-                  type="submit"
-                  className="w-full bg-primary hover:bg-[#169976] text-black font-bold text-lg py-6 glow-primary-strong"
-                  size="lg"
-                  disabled={!isFormValid || isSubmitting}
-                >
-                  <motion.span
-                    animate={isSubmitting ? { rotate: 360 } : {}}
-                    transition={{
-                      duration: 1,
-                      repeat: isSubmitting ? Number.POSITIVE_INFINITY : 0,
-                      ease: 'linear',
-                    }}
-                  >
-                    {isSubmitting ? '⚡' : '🚀'}
-                  </motion.span>
-                  <span className="ml-2">
-                    {!isAuthenticated
-                      ? 'Connect Wallet to Create'
-                      : isSubmitting
-                      ? 'Creating Box...'
-                      : 'Create SwapBox'}
-                  </span>
-                </Button>
-              </form>
-            </CardContent>
-          </Card>
+            {/* Core Box Form */}
+            <CoreBoxForm />
+          </Tabs>
         </div>
       </main>
     </div>
