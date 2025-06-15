@@ -19,6 +19,7 @@ import { User, Zap, AlertCircle, Clock } from "lucide-react"; // icons
 import { useEffect, useState } from "react";
 import { useSimpleCore } from "@/lib/core-contract-service";
 import { usePrivy } from "@privy-io/react-auth";
+import { ethers } from "ethers";
 const mockTradeHistory = [
   {
     id: 1,
@@ -148,8 +149,15 @@ export default function CoreInfoPage() {
   const [bidAmount, setBidAmount] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
-  const { connectWallet, account, getSecondaryData, bidOnCore } =
-    useSimpleCore();
+  const {
+    connectWallet,
+    account,
+    getSecondaryData,
+    bidOnCore,
+    getCorePrice,
+    isConnected,
+  } = useSimpleCore();
+  const [price, setPrice] = useState<string>();
 
   const privy = usePrivy();
   const address = privy.user?.wallet?.address;
@@ -212,6 +220,35 @@ export default function CoreInfoPage() {
       fetchBoxDetails();
     }
   }, [params?.id, isAuthenticated, account]);
+
+  const fetchPrice = async () => {
+    if (!isConnected) {
+      setError("Please connect your wallet first");
+      return;
+    }
+
+    if (!params?.id) {
+      setLoading(false);
+      return;
+    }
+
+    try {
+      const index = Number(params.id);
+
+      console.log(index);
+      setError("");
+      const result = await getCorePrice(index as number);
+      setPrice(result);
+    } catch (err) {
+      const errorMessage =
+        err instanceof Error ? err.message : "Failed to fetch price";
+      setError(errorMessage);
+    }
+  };
+
+  useEffect(() => {
+    fetchPrice();
+  }, [isConnected]);
 
   // Helper function to shorten addresses
   const shortenAddress = (address: string) => {
@@ -332,6 +369,10 @@ export default function CoreInfoPage() {
                   {
                     label: "Base Price",
                     value: `${boxDetails?.basePrice ?? "0"} WND`,
+                  },
+                  {
+                    label: "Market Price",
+                    value: `${price ?? "0"} WND`,
                   },
                   {
                     label: "Last Price",
